@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
-/* Tell Tailwind v4 where to scan for utility classes (Turbopack build fix) */
-@source "../**/*.{tsx,ts,jsx,js}";
+/* @source paths are relative to CWD (project root), NOT the CSS file */
+@source "./src/**/*.{tsx,ts,jsx,js}";
 
 body {
   background: #FAFAFA;
@@ -11,27 +11,23 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Upload zone */
 .upload-zone {
   border: 2px dashed #E5E5E5;
   background: #FFFFFF;
   transition: all 0.2s ease;
 }
-
 .upload-zone:hover,
 .upload-zone.drag-active {
   border-color: #F97316;
   background: #FFF7ED;
 }
 
-/* Processing pulse */
 @keyframes pawBounce {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-8px); }
 }
 .paw-bounce { animation: pawBounce 1.4s ease-in-out infinite; }
 
-/* Legacy aliases */
 .gradient-hero    { background: #FAFAFA; }
 .gradient-card    { background: #FFFFFF; border: 1px solid #E5E5E5; }
 .gradient-card:hover { border-color: #D4D4D4; }
@@ -42,7 +38,6 @@ body {
   box-shadow: 0 8px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.04);
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #F5F5F5; }
 ::-webkit-scrollbar-thumb { background: #D4D4D4; border-radius: 3px; }
