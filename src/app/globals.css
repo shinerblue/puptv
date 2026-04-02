@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Tell Tailwind v4 where to scan for utility classes (Turbopack build fix) */
-@source "../​​**/*.{tsx,ts,jsx,js}";
+@source "../**/*.{tsx,ts,jsx,js}";
 
 body {
   background: #FAFAFA;
@@ -31,7 +31,7 @@ body {
 }
 .paw-bounce { animation: pawBounce 1.4s ease-in-out infinite; }
 
-/* Legacy aliases — changed to clean light style */
+/* Legacy aliases */
 .gradient-hero    { background: #FAFAFA; }
 .gradient-card    { background: #FFFFFF; border: 1px solid #E5E5E5; }
 .gradient-card:hover { border-color: #D4D4D4; }
