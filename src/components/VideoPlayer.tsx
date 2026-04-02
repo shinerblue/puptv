@@ -14,19 +14,18 @@ export default function VideoPlayer({ videoUrl, dogName }: VideoPlayerProps) {
   const handleTogglePlay = () => {
     const video = document.getElementById("pup-video") as HTMLVideoElement;
     if (video) {
-      if (isPlaying) {
-        video.pause();
-      } else {
-        video.play();
-      }
+      if (isPlaying) video.pause();
+      else video.play();
       setIsPlaying(!isPlaying);
     }
   };
 
   return (
     <div className="max-w-2xl mx-auto">
-      {/* Video container */}
-      <div className="relative rounded-2xl overflow-hidden video-glow mb-6">
+      <div
+        className="relative rounded-2xl overflow-hidden mb-6"
+        style={{ boxShadow: "0 8px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.04)" }}
+      >
         <video
           id="pup-video"
           src={videoUrl}
@@ -36,48 +35,47 @@ export default function VideoPlayer({ videoUrl, dogName }: VideoPlayerProps) {
           playsInline
           className="w-full aspect-video object-cover"
         />
-
-        {/* Overlay controls */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end p-4">
+        <div
+          className="absolute inset-0 flex items-end p-4 opacity-0 hover:opacity-100 transition-opacity"
+          style={{ background: "linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 60%)" }}
+        >
           <button
             onClick={handleTogglePlay}
-            className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
+            className="w-10 h-10 rounded-full flex items-center justify-center"
+            style={{ background: "rgba(255,255,255,0.25)", backdropFilter: "blur(8px)" }}
           >
             {isPlaying ? (
-              <Pause className="w-5 h-5 text-white" />
+              <Pause className="w-4 h-4 text-white" />
             ) : (
-              <Play className="w-5 h-5 text-white ml-0.5" />
+              <Play className="w-4 h-4 text-white ml-0.5" />
             )}
           </button>
         </div>
-
-        {/* Title badge */}
-        <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-2">
-          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-          <span className="text-xs text-white font-medium">
-            {dogName ? `${dogName}'s Adventure` : "PupTV Adventure"}
-          </span>
+        <div
+          className="absolute top-3 left-3 px-3 py-1 rounded-full flex items-center gap-2 text-xs font-medium text-white"
+          style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(8px)" }}
+        >
+          <span className="w-2 h-2 rounded-full" style={{ background: "#EF4444" }} />
+          {dogName ? `${dogName}'s Adventure` : "PupTV Adventure"}
         </div>
       </div>
 
-      {/* Action buttons */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <button className="gradient-card rounded-xl p-3 flex flex-col items-center gap-2 hover:border-purple-500/40 transition-all">
-          <Download className="w-5 h-5 text-purple-400" />
-          <span className="text-xs text-slate-400">Download</span>
-        </button>
-        <button className="gradient-card rounded-xl p-3 flex flex-col items-center gap-2 hover:border-purple-500/40 transition-all">
-          <Tv className="w-5 h-5 text-red-400" />
-          <span className="text-xs text-slate-400">Upload to YouTube</span>
-        </button>
-        <button className="gradient-card rounded-xl p-3 flex flex-col items-center gap-2 hover:border-purple-500/40 transition-all">
-          <Share2 className="w-5 h-5 text-pink-400" />
-          <span className="text-xs text-slate-400">Share</span>
-        </button>
-        <button className="gradient-card rounded-xl p-3 flex flex-col items-center gap-2 hover:border-purple-500/40 transition-all">
-          <RotateCcw className="w-5 h-5 text-amber-400" />
-          <span className="text-xs text-slate-400">New Adventure</span>
-        </button>
+      <div className="grid grid-cols-4 gap-3">
+        {[
+          { icon: <Download className="w-5 h-5" />, label: "Download", color: "#6E6E73" },
+          { icon: <Tv className="w-5 h-5" />, label: "YouTube", color: "#EF4444" },
+          { icon: <Share2 className="w-5 h-5" />, label: "Share", color: "#6E6E73" },
+          { icon: <RotateCcw className="w-5 h-5" />, label: "New", color: "#6E6E73" },
+        ].map((action) => (
+          <button
+            key={action.label}
+            className="rounded-2xl p-4 flex flex-col items-center gap-2 border"
+            style={{ background: "#FFFFFF", borderColor: "#E5E5E5", color: action.color }}
+          >
+            {action.icon}
+            <span className="text-xs font-medium" style={{ color: "#6E6E73" }}>{action.label}</span>
+          </button>
+        ))}
       </div>
     </div>
   );

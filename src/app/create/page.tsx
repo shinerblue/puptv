@@ -2,28 +2,17 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import {
-  Dog,
-  ArrowLeft,
-  Sparkles,
-  Mountain,
-  Palmtree,
-  Rocket,
-  TreePine,
-  Building2,
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import PhotoUploader from "@/components/PhotoUploader";
-import ProcessingStatus, {
-  ProcessingStage,
-} from "@/components/ProcessingStatus";
+import ProcessingStatus, { ProcessingStage } from "@/components/ProcessingStatus";
 import VideoPlayer from "@/components/VideoPlayer";
 
 const adventureThemes = [
-  { id: "park", label: "Sunny Park", icon: TreePine, emoji: "\ud83c\udf33" },
-  { id: "beach", label: "Beach Day", icon: Palmtree, emoji: "\ud83c\udfd6\ufe0f" },
-  { id: "space", label: "Space Explorer", icon: Rocket, emoji: "\ud83d\ude80" },
-  { id: "mountain", label: "Mountain Hike", icon: Mountain, emoji: "\ud83c\udfd4\ufe0f" },
-  { id: "city", label: "City Adventure", icon: Building2, emoji: "\ud83c\udfd9\ufe0f" },
+  { id: "park", label: "Sunny Park", emoji: "🌳" },
+  { id: "beach", label: "Beach Day", emoji: "🏖️" },
+  { id: "space", label: "Space Explorer", emoji: "🚀" },
+  { id: "mountain", label: "Mountain Hike", emoji: "🏔️" },
+  { id: "city", label: "City Adventure", emoji: "🏙️" },
 ];
 
 export default function CreatePage() {
@@ -48,15 +37,12 @@ export default function CreatePage() {
     setError(null);
 
     try {
-      // Stage 1: Upload photos
+      // Stage 1: Compress image client-side (avoids Vercel 4.5MB body limit)
       setProcessingStage("uploading");
       setProgress(0);
 
-      // Convert first photo to base64 for the API
       const file = photos[0];
-      const base64 = await fileToBase64(file);
-      const dataUrl = `data:${file.type};base64,${base64}`;
-
+      const compressedDataUrl = await compressImage(file, 768);
       setProgress(100);
 
       // Stage 2: Cartoonify
@@ -66,11 +52,12 @@ export default function CreatePage() {
       const cartoonRes = await fetch("/api/cartoonify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl: dataUrl }),
+        body: JSON.stringify({ imageUrl: compressedDataUrl }),
       });
 
       if (!cartoonRes.ok) {
-        throw new Error("Failed to create cartoon");
+        const errData = await cartoonRes.json().catch(() => ({}));
+        throw new Error(errData.details || errData.error || "Failed to create cartoon");
       }
 
       const cartoonData = await cartoonRes.json();
@@ -101,16 +88,12 @@ export default function CreatePage() {
       // Stage 4: Finalize
       setProcessingStage("finalizing");
       setProgress(50);
-
-      // Small delay for UX
-      await new Promise((r) => setTimeout(r, 1500));
+      await new Promise((r) => setTimeout(r, 1000));
       setProgress(100);
 
       setProcessingStage("complete");
       setVideoUrl(videoData.videoUrl);
-
-      // Transition to result
-      setTimeout(() => setStep("result"), 1000);
+      setTimeout(() => setStep("result"), 800);
     } catch (err: unknown) {
       console.error("Processing error:", err);
       setProcessingStage("error");
@@ -120,49 +103,64 @@ export default function CreatePage() {
     }
   };
 
+  const steps = ["Upload", "Customize", "Create"];
+  const stepKeys = ["upload", "customize", "processing"];
+  const currentStepIdx = step === "result" ? 3 : stepKeys.indexOf(step);
+
   return (
-    <div className="min-h-screen gradient-hero">
+    <div className="min-h-screen" style={{ background: "#FAFAFA" }}>
       {/* Header */}
-      <nav className="border-b border-white/5 backdrop-blur-md bg-[#0f0a1a]/80">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
+      <nav
+        className="sticky top-0 z-50 border-b"
+        style={{
+          background: "rgba(255,255,255,0.92)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderColor: "#E5E5E5",
+        }}
+      >
+        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link
+            href="/"
+            className="flex items-center gap-2"
+            style={{ color: "#6E6E73" }}
+          >
             <ArrowLeft className="w-4 h-4" />
-            <Dog className="w-6 h-6 text-purple-400" />
-            <span className="font-semibold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <span className="font-bold text-lg" style={{ color: "#1D1D1F" }}>
               PupTV
             </span>
           </Link>
 
-          {/* Step indicators */}
-          <div className="flex items-center gap-2">
-            {["Upload", "Customize", "Create"].map((label, i) => {
-              const stepMap = ["upload", "customize", "processing"];
-              const currentIdx =
-                step === "result" ? 3 : stepMap.indexOf(step);
-              const isActive = i <= currentIdx;
+          <div className="flex items-center gap-1.5">
+            {steps.map((label, i) => {
+              const isActive = i === currentStepIdx;
+              const isComplete = i < currentStepIdx;
               return (
-                <div key={label} className="flex items-center gap-2">
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                      isActive
-                        ? "bg-purple-500 text-white"
-                        : "bg-white/5 text-slate-600"
-                    }`}
-                  >
-                    {i + 1}
-                  </div>
-                  <span
-                    className={`text-sm hidden sm:inline ${
-                      isActive ? "text-white" : "text-slate-600"
-                    }`}
-                  >
-                    {label}
-                  </span>
-                  {i < 2 && (
+                <div key={label} className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5">
                     <div
-                      className={`w-8 h-px ${
-                        isActive ? "bg-purple-500" : "bg-white/10"
-                      }`}
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold"
+                      style={{
+                        background: isComplete ? "#10B981" : isActive ? "#1D1D1F" : "#E5E5E5",
+                        color: isComplete || isActive ? "#FFFFFF" : "#9CA3AF",
+                      }}
+                    >
+                      {isComplete ? "✓" : i + 1}
+                    </div>
+                    <span
+                      className="text-sm hidden sm:inline"
+                      style={{
+                        color: isActive ? "#1D1D1F" : "#9CA3AF",
+                        fontWeight: isActive ? 600 : 400,
+                      }}
+                    >
+                      {label}
+                    </span>
+                  </div>
+                  {i < steps.length - 1 && (
+                    <div
+                      className="w-5 h-px mx-0.5"
+                      style={{ background: i < currentStepIdx ? "#10B981" : "#E5E5E5" }}
                     />
                   )}
                 </div>
@@ -172,193 +170,184 @@ export default function CreatePage() {
         </div>
       </nav>
 
-      <main className="max-w-5xl mx-auto px-6 py-12">
-        {/* Step 1: Upload */}
+      <main className="max-w-3xl mx-auto px-6 py-12">
         {step === "upload" && (
-          <div className="max-w-2xl mx-auto">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold mb-3">Upload Your Dog&apos;s Photos</h1>
-              <p className="text-slate-400">
-                Share 1-5 photos showing your pup from different angles. Better photos = better cartoons!
-              </p>
-            </div>
+          <div className="max-w-xl mx-auto">
+            <h1
+              className="font-bold mb-3"
+              style={{ fontSize: "clamp(28px,5vw,38px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
+            >
+              Upload your dog&apos;s photos
+            </h1>
+            <p className="mb-8" style={{ color: "#6E6E73" }}>
+              Share 1–5 photos showing your pup from different angles. More variety = better cartoon.
+            </p>
 
             <PhotoUploader onPhotosSelected={handlePhotosSelected} />
 
             {photos.length > 0 && (
-              <div className="mt-8 text-center">
-                <button
-                  onClick={() => setStep("customize")}
-                  className="gradient-btn-primary text-white font-semibold px-8 py-3 rounded-full inline-flex items-center gap-2"
-                >
-                  Next: Customize Adventure
-                  <Sparkles className="w-4 h-4" />
-                </button>
-              </div>
+              <button
+                onClick={() => setStep("customize")}
+                className="mt-8 w-full font-semibold py-4 rounded-2xl text-lg flex items-center justify-center gap-2"
+                style={{ background: "#1D1D1F", color: "#FFFFFF" }}
+              >
+                Next: Customize <span>→</span>
+              </button>
             )}
 
-            {/* Tips */}
-            <div className="mt-12 gradient-card rounded-2xl p-6">
-              <h3 className="font-semibold mb-3 text-purple-300">Tips for best results</h3>
-              <div className="grid sm:grid-cols-2 gap-3 text-sm text-slate-400">
-                <div className="flex items-start gap-2">
-                  <span className="text-green-400 mt-0.5">\u2713</span>
-                  <span>Clear, well-lit photos of your dog</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-green-400 mt-0.5">\u2713</span>
-                  <span>Multiple angles (front, side, action)</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-green-400 mt-0.5">\u2713</span>
-                  <span>Show their unique markings & features</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-red-400 mt-0.5">\u2715</span>
-                  <span>Avoid blurry or very dark photos</span>
-                </div>
+            <div
+              className="mt-8 rounded-2xl p-6 border"
+              style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}
+            >
+              <h3 className="font-semibold mb-4" style={{ color: "#1D1D1F" }}>
+                Tips for the best cartoon
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { ok: true, text: "Clear, well-lit photos" },
+                  { ok: true, text: "Multiple angles" },
+                  { ok: true, text: "Show unique markings" },
+                  { ok: false, text: "Blurry or very dark photos" },
+                ].map((tip, i) => (
+                  <div key={i} className="flex items-start gap-2 text-sm">
+                    <span style={{ color: tip.ok ? "#10B981" : "#EF4444" }}>
+                      {tip.ok ? "✓" : "✕"}
+                    </span>
+                    <span style={{ color: "#6E6E73" }}>{tip.text}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         )}
 
-        {/* Step 2: Customize */}
         {step === "customize" && (
-          <div className="max-w-2xl mx-auto">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold mb-3">Customize the Adventure</h1>
-              <p className="text-slate-400">
-                Give your pup a name and pick an adventure theme
-              </p>
-            </div>
+          <div className="max-w-xl mx-auto">
+            <h1
+              className="font-bold mb-3"
+              style={{ fontSize: "clamp(28px,5vw,38px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
+            >
+              Customize the adventure
+            </h1>
+            <p className="mb-8" style={{ color: "#6E6E73" }}>
+              Give your pup a name and choose their adventure setting
+            </p>
 
-            {/* Dog name */}
-            <div className="mb-8">
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                What&apos;s your dog&apos;s name?
+            <div className="mb-6">
+              <label className="block text-sm font-semibold mb-2" style={{ color: "#1D1D1F" }}>
+                Dog&apos;s name
               </label>
               <input
                 type="text"
                 value={dogName}
                 onChange={(e) => setDogName(e.target.value)}
-                placeholder="e.g., Buddy, Luna, Max..."
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/25 transition-all"
+                placeholder="Buddy, Luna, Max…"
+                className="w-full rounded-xl px-4 py-3 text-base outline-none border-2"
+                style={{ background: "#FFFFFF", borderColor: "#E5E5E5", color: "#1D1D1F" }}
+                onFocus={(e) => (e.target.style.borderColor = "#1D1D1F")}
+                onBlur={(e) => (e.target.style.borderColor = "#E5E5E5")}
               />
             </div>
 
-            {/* Theme selection */}
             <div className="mb-8">
-              <label className="block text-sm font-medium text-slate-300 mb-3">
-                Choose an adventure theme
+              <label className="block text-sm font-semibold mb-3" style={{ color: "#1D1D1F" }}>
+                Adventure theme
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {adventureThemes.map((theme) => {
-                  const Icon = theme.icon;
                   const isSelected = selectedTheme === theme.id;
                   return (
                     <button
                       key={theme.id}
                       onClick={() => setSelectedTheme(theme.id)}
-                      className={`p-4 rounded-xl text-left transition-all ${
-                        isSelected
-                          ? "bg-purple-500/20 border-2 border-purple-500"
-                          : "gradient-card hover:border-purple-500/30"
-                      }`}
+                      className="p-4 rounded-2xl text-left border-2"
+                      style={{
+                        background: isSelected ? "#1D1D1F" : "#FFFFFF",
+                        borderColor: isSelected ? "#1D1D1F" : "#E5E5E5",
+                        color: isSelected ? "#FFFFFF" : "#1D1D1F",
+                      }}
                     >
                       <div className="text-2xl mb-2">{theme.emoji}</div>
-                      <div className="flex items-center gap-2">
-                        <Icon className={`w-4 h-4 ${isSelected ? "text-purple-400" : "text-slate-500"}`} />
-                        <span className={`text-sm font-medium ${isSelected ? "text-white" : "text-slate-400"}`}>
-                          {theme.label}
-                        </span>
-                      </div>
+                      <div className="text-sm font-medium">{theme.label}</div>
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* Preview summary */}
-            <div className="gradient-card rounded-2xl p-6 mb-8">
-              <h3 className="font-semibold mb-3 text-purple-300">Your order</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Photos uploaded</span>
-                  <span className="text-white">{photos.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Dog&apos;s name</span>
-                  <span className="text-white">{dogName || "(unnamed pup)"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Adventure theme</span>
-                  <span className="text-white">
-                    {adventureThemes.find((t) => t.id === selectedTheme)?.label}
-                  </span>
-                </div>
-                <hr className="border-white/5 my-2" />
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Price</span>
-                  <span className="text-green-400 font-semibold">
-                    $4.99{" "}
-                    <span className="text-xs text-slate-500 font-normal">
-                      (goes to dog charity)
-                    </span>
-                  </span>
+            <div
+              className="rounded-2xl p-6 mb-8 border"
+              style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}
+            >
+              <h3 className="font-semibold mb-4" style={{ color: "#1D1D1F" }}>Order summary</h3>
+              <div className="space-y-3 text-sm">
+                {[
+                  { label: "Photos", value: String(photos.length) },
+                  { label: "Name", value: dogName || "—" },
+                  { label: "Theme", value: adventureThemes.find((t) => t.id === selectedTheme)?.label || "" },
+                ].map((row) => (
+                  <div key={row.label} className="flex justify-between">
+                    <span style={{ color: "#6E6E73" }}>{row.label}</span>
+                    <span className="font-medium" style={{ color: "#1D1D1F" }}>{row.value}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between pt-3 border-t" style={{ borderColor: "#E5E5E5" }}>
+                  <span style={{ color: "#6E6E73" }}>Total</span>
+                  <div className="text-right">
+                    <span className="font-bold" style={{ color: "#1D1D1F" }}>$4.99</span>
+                    <p className="text-xs font-medium" style={{ color: "#F97316" }}>goes to dog charity 🐾</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <button
                 onClick={() => setStep("upload")}
-                className="flex-1 border border-white/10 text-slate-400 hover:text-white font-medium px-6 py-3 rounded-full transition-colors"
+                className="flex-1 font-semibold py-4 rounded-2xl border-2"
+                style={{ borderColor: "#E5E5E5", color: "#6E6E73", background: "#FFFFFF" }}
               >
-                Back
+                ← Back
               </button>
               <button
                 onClick={handleStartProcessing}
-                className="flex-1 gradient-btn-primary text-white font-semibold px-6 py-3 rounded-full inline-flex items-center justify-center gap-2"
+                className="flex-[2] font-semibold py-4 rounded-2xl text-lg"
+                style={{ background: "#F97316", color: "#FFFFFF" }}
               >
-                <Sparkles className="w-4 h-4" />
-                Create Video
+                Create Video ✨
               </button>
             </div>
           </div>
         )}
 
-        {/* Step 3: Processing */}
         {step === "processing" && (
           <ProcessingStatus
             stage={processingStage}
             progress={progress}
             error={error || undefined}
             cartoonPreviewUrl={cartoonPreview}
+            onRetry={() => { setStep("customize"); setError(null); }}
           />
         )}
 
-        {/* Step 4: Result */}
         {step === "result" && videoUrl && (
           <div>
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold mb-3">
-                {dogName ? `${dogName}'s` : "Your Pup's"} Adventure is Ready!
+            <div className="text-center mb-10">
+              <h1
+                className="font-bold mb-3"
+                style={{ fontSize: "clamp(28px,5vw,38px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
+              >
+                {dogName ? `${dogName}'s adventure` : "Your pup's adventure"} is ready!
               </h1>
-              <p className="text-slate-400">
-                Your custom Dog TV video is ready to play on loop
-              </p>
+              <p style={{ color: "#6E6E73" }}>Your custom Dog TV video is ready to watch and share</p>
             </div>
             <VideoPlayer videoUrl={videoUrl} dogName={dogName} />
-
-            <div className="text-center mt-12">
-              <p className="text-sm text-pink-400 mb-2">
-                Thank you! Your purchase helps dogs in need.
+            <div className="text-center mt-10">
+              <p className="text-sm font-medium mb-3" style={{ color: "#F97316" }}>
+                🐾 Thank you! Your purchase helps dogs in need.
               </p>
-              <Link
-                href="/create"
-                className="text-sm text-slate-500 hover:text-white transition-colors"
-              >
-                Create another adventure \u2192
+              <Link href="/create" className="text-sm" style={{ color: "#A1A1AA" }}>
+                Create another adventure →
               </Link>
             </div>
           </div>
@@ -368,17 +357,41 @@ export default function CreatePage() {
   );
 }
 
-// Helper: convert File to base64
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      const result = reader.result as string;
-      // Strip the data URL prefix to get raw base64
-      const base64 = result.split(",")[1];
-      resolve(base64);
+async function compressImage(file: File, maxDimension: number = 768): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      let { width, height } = img;
+      if (width > maxDimension || height > maxDimension) {
+        if (width >= height) {
+          height = Math.round((height * maxDimension) / width);
+          width = maxDimension;
+        } else {
+          width = Math.round((width * maxDimension) / height);
+          height = maxDimension;
+        }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", 0.85));
     };
-    reader.onerror = reject;
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(file);
+    };
+    img.src = objectUrl;
   });
 }

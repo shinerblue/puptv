@@ -1,6 +1,6 @@
 "use client";
 
-import { Dog, Sparkles, Film, Check, Loader2 } from "lucide-react";
+import { Loader2, Check } from "lucide-react";
 
 export type ProcessingStage =
   | "uploading"
@@ -15,108 +15,113 @@ interface ProcessingStatusProps {
   progress?: number;
   error?: string;
   cartoonPreviewUrl?: string;
+  onRetry?: () => void;
 }
 
 const stages = [
-  { key: "uploading", label: "Uploading photos", icon: Dog },
-  { key: "cartoonifying", label: "Creating cartoon character", icon: Sparkles },
-  { key: "generating_video", label: "Generating adventure video", icon: Film },
-  { key: "finalizing", label: "Finalizing your video", icon: Check },
+  { key: "uploading", label: "Preparing photos" },
+  { key: "cartoonifying", label: "Creating cartoon character" },
+  { key: "generating_video", label: "Generating adventure video" },
+  { key: "finalizing", label: "Finishing up" },
 ];
 
 export default function ProcessingStatus({
   stage,
-  progress,
   error,
   cartoonPreviewUrl,
+  onRetry,
 }: ProcessingStatusProps) {
   const currentIndex = stages.findIndex((s) => s.key === stage);
 
   return (
-    <div className="gradient-card rounded-2xl p-8 max-w-lg mx-auto">
-      <div className="text-center mb-8">
-        <Dog className="w-12 h-12 text-purple-400 mx-auto mb-3 paw-bounce" />
-        <h3 className="text-xl font-semibold mb-1">Creating Your Dog&apos;s Adventure</h3>
-        <p className="text-sm text-slate-400">This typically takes 2-3 minutes</p>
-      </div>
+    <div className="max-w-sm mx-auto text-center">
+      {stage === "error" ? (
+        <div
+          className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
+          style={{ background: "#FEF2F2" }}
+        >
+          <span className="text-2xl">⚠️</span>
+        </div>
+      ) : (
+        <div
+          className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
+          style={{ background: "#F5F5F5" }}
+        >
+          <span className="text-3xl paw-bounce">🐾</span>
+        </div>
+      )}
 
-      {/* Cartoon preview */}
-      {cartoonPreviewUrl && (
-        <div className="mb-6 rounded-xl overflow-hidden video-glow">
-          <img
-            src={cartoonPreviewUrl}
-            alt="Cartoon preview"
-            className="w-full h-48 object-cover"
-          />
-          <div className="bg-purple-500/10 px-4 py-2 text-center">
-            <span className="text-sm text-purple-300">Your pup as a cartoon character!</span>
+      <h2
+        className="font-bold mb-2"
+        style={{ fontSize: "24px", letterSpacing: "-0.02em", color: "#1D1D1F" }}
+      >
+        {stage === "error" ? "Something went wrong" : "Creating your adventure…"}
+      </h2>
+      <p className="text-sm mb-10" style={{ color: "#6E6E73" }}>
+        {stage === "error"
+          ? error || "An unexpected error occurred"
+          : "This typically takes 2–3 minutes"}
+      </p>
+
+      {cartoonPreviewUrl && stage !== "error" && (
+        <div className="mb-8 rounded-2xl overflow-hidden border" style={{ borderColor: "#E5E5E5" }}>
+          <img src={cartoonPreviewUrl} alt="Cartoon preview" className="w-full h-48 object-cover" />
+          <div
+            className="px-4 py-2.5 text-center border-t text-sm font-medium"
+            style={{ background: "#FAFAFA", borderColor: "#E5E5E5", color: "#6E6E73" }}
+          >
+            ✨ Your pup as a cartoon!
           </div>
         </div>
       )}
 
-      {/* Progress steps */}
-      <div className="space-y-4">
-        {stages.map((s, i) => {
-          const isActive = s.key === stage;
-          const isComplete = i < currentIndex || stage === "complete";
-          const isPending = i > currentIndex && stage !== "complete";
-          const Icon = s.icon;
-
-          return (
-            <div
-              key={s.key}
-              className={`flex items-center gap-4 p-3 rounded-xl transition-all ${
-                isActive ? "bg-purple-500/10 border border-purple-500/20" : ""
-              }`}
-            >
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  isComplete
-                    ? "bg-green-500/20 text-green-400"
-                    : isActive
-                    ? "bg-purple-500/20 text-purple-400"
-                    : "bg-white/5 text-slate-600"
-                }`}
-              >
-                {isComplete ? (
-                  <Check className="w-5 h-5" />
-                ) : isActive ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <Icon className="w-5 h-5" />
-                )}
-              </div>
-              <div className="flex-1">
-                <p
-                  className={`text-sm font-medium ${
-                    isComplete
-                      ? "text-green-400"
-                      : isActive
-                      ? "text-white"
-                      : "text-slate-600"
-                  }`}
+      {stage !== "error" && (
+        <div
+          className="rounded-2xl border p-6 text-left space-y-4"
+          style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}
+        >
+          {stages.map((s, i) => {
+            const isActive = s.key === stage;
+            const isComplete = i < currentIndex || stage === "complete";
+            const isPending = i > currentIndex && stage !== "complete";
+            return (
+              <div key={s.key} className="flex items-center gap-3">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: isComplete ? "#ECFDF5" : isActive ? "#1D1D1F" : "#F5F5F5",
+                  }}
+                >
+                  {isComplete ? (
+                    <Check className="w-4 h-4" style={{ color: "#10B981" }} />
+                  ) : isActive ? (
+                    <Loader2 className="w-4 h-4 text-white animate-spin" />
+                  ) : (
+                    <span className="text-xs font-semibold" style={{ color: isPending ? "#D4D4D4" : "#9CA3AF" }}>
+                      {i + 1}
+                    </span>
+                  )}
+                </div>
+                <span
+                  className="text-sm font-medium"
+                  style={{ color: isComplete ? "#10B981" : isActive ? "#1D1D1F" : "#D4D4D4" }}
                 >
                   {s.label}
-                </p>
-                {isActive && progress !== undefined && (
-                  <div className="mt-2 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                )}
+                </span>
               </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Error state */}
-      {stage === "error" && error && (
-        <div className="mt-6 bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-center">
-          <p className="text-red-400 text-sm">{error}</p>
+            );
+          })}
         </div>
+      )}
+
+      {stage === "error" && onRetry && (
+        <button
+          onClick={onRetry}
+          className="mt-6 font-semibold px-8 py-3 rounded-full"
+          style={{ background: "#1D1D1F", color: "#FFFFFF" }}
+        >
+          Try Again
+        </button>
       )}
     </div>
   );
