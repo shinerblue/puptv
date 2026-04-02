@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import Replicate from "replicate";
 
+// Allow up to 60s for AI model inference
+export const maxDuration = 60;
+
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN || "",
 });
@@ -13,6 +16,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "imageUrl is required" }, { status: 400 });
     }
 
+    // Demo mode when no API token
     if (!process.env.REPLICATE_API_TOKEN) {
       await new Promise((r) => setTimeout(r, 1500));
       return NextResponse.json({
@@ -22,21 +26,25 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // instruct-pix2pix: instruction-following image editor
+    // Use SDXL img2img for cartoon-style transformation
+    // Version: 7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc (latest as of 2025)
     const output = await replicate.run(
-      "timothybrooks/instruct-pix2pix:30c1d0b916a6f8efce20493f5d61ee27491ab2a60dd6a325b95a00adc82c3b65",
+      "stability-ai/sdxl:7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",
       {
         input: {
           image: imageUrl,
           prompt:
-            "Transform this dog into an adorable Pixar-style 3D cartoon character. Bright vivid colors, soft cel-shaded fur, big expressive eyes, cheerful happy expression. High quality digital art, professional CGI, studio lighting.",
-          num_inference_steps: 20,
-          image_guidance_scale: 1.2,
-          guidance_scale: 8.0,
+            "Pixar 3D cartoon dog, adorable character, big expressive eyes, soft cel-shaded fur, bright vivid colors, cheerful happy expression, studio lighting, high quality digital art, professional CGI render, 4k",
+          negative_prompt:
+            "realistic, photo, blurry, low quality, dark, scary, ugly, deformed, human, person",
+          prompt_strength: 0.7,
+          num_inference_steps: 30,
+          guidance_scale: 7.5,
         },
       }
     );
 
+    // SDXL returns an array of image URLs
     const outputUrl = Array.isArray(output) ? output[0] : output;
     const cartoonUrl = typeof outputUrl === "string" ? outputUrl : String(outputUrl);
 
