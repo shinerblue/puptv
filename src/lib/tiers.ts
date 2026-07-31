@@ -35,7 +35,7 @@ export const QUALITY_TIERS: QualityTier[] = [
     // PLACEHOLDER pending the budget-model bake-off (Wan vs Hailuo vs Kling —
     // see task #20). One-line swappable: change only this string once that
     // task confirms a winner, nothing else in the app needs to change.
-    videoModel: "kwaivgi/kling-v2.1",
+    videoModel: "bytedance/seedance-1-lite",
     selectable: true,
   },
   {
