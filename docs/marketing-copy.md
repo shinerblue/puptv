@@ -24,7 +24,7 @@
 You upload 5-10 pictures of Bailey — a close-up, a few side views, maybe one of him playing. That's all we need to know what he looks like.
 
 **Step 2: We Create the Episode**
-Our artists make a Pixar-style cartoon adventure where Bailey is the star. He goes on a quest, makes friends, solves a problem. Each episode is about 10 minutes. You get it in your inbox in about a week.
+Our artists make a Pixar-style cartoon adventure where Bailey is the star. He goes on a quest, makes friends, solves a problem. Each episode is about a minute of continuous cartoon, built to loop seamlessly for as long as Bailey wants to watch. You get it in your inbox in about a week.
 
 **Step 3: It Appears on Your TV**
 The episode shows up on a YouTube channel we set up just for you. Turn on your TV, find the channel, hit play. No passwords to remember. No confusing menus. Just Bailey's adventure, ready to watch.
@@ -48,13 +48,13 @@ Just grandparents and their granddog's cartoon.
 ## Pricing
 
 **Single Episode — $4.99**
-One 10-minute adventure. Good for testing it out. See what your dog looks like as a cartoon hero.
+About a minute of continuous cartoon, built to loop seamlessly for as long as Bailey wants to watch. Good for testing it out. See what your dog looks like as a cartoon hero.
 
 **Three-Episode Pack — $9.99**
 Three different themes (jungle, ocean, mountain). You get three weeks of Bailey on TV. Better value. Better for gifts.
 
 **Season Pass — $19.99**
-Ten episodes over ten weeks. One new adventure every Friday. The full story arc. Bailey becomes a character people know. Proceeds go to dog rescues — your subscription funds real rescues every week.
+6 episodes over 6 weeks — a premiere episode plus five weekly adventures. One new adventure every Friday. Bailey becomes a character people know. $5.00 of every season goes to dog rescues.
 
 
 ## Charity Section
@@ -91,9 +91,9 @@ We're not positioning ourselves as the morality police. We're just offering you 
 
 PupTV creates custom cartoon adventures starring your dog. Upload photos, we make a Pixar-style episode where your dog is the hero. The cartoon shows up on a YouTube channel we set up just for you—no confusing setup, no extra accounts, no tech support calls.
 
-Each episode is about 10 minutes long. New stories every week if you pick a season pass. Dogs navigate jungles, solve mysteries, make friends—adventures written around your dog's personality and the photos you send.
+Each episode is about a minute of continuous cartoon, built to loop seamlessly for as long as your dog wants to watch. New stories every week for six weeks if you pick the season pass. Dogs navigate jungles, solve mysteries, make friends—adventures written around your dog's personality and the photos you send.
 
-One percent of every sale goes to dog rescues. Real rescues. Real impact. We publish which rescues received money every week, so you know exactly where it went.
+$1 from every episode goes to dog rescues ($2.50 per three-pack, $5 per season). Real rescues. Real impact. We publish which rescues received money every week, so you know exactly where it went.
 
 PupTV started because dog owners deserve better than anonymous overseas content farms. Your dog deserves a story. Rescues deserve real funding. Grandparents deserve something real to watch with their granddog.
 

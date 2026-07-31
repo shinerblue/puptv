@@ -40,7 +40,7 @@ export default function FavoritesPage() {
         </h1>
         <p className="text-xl mx-auto leading-relaxed" style={{ color: "#6E6E73", maxWidth: "560px" }}>
           Build a continuous loop of your dog&apos;s best adventures — it plays like real TV, no
-          clicking play every ten minutes.
+          clicking play every single minute.
         </p>
       </section>
 
