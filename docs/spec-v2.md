@@ -2,6 +2,22 @@
 
 *July 30, 2026 — rebuilt around the proven pipeline (Nano Banana Pro + Kling 2.5)*
 
+> **Status: this is the target design, not the deployed system.**
+> What is actually live at https://puptv.vercel.app as of this review:
+>
+> | Spec says | Actually deployed |
+> |---|---|
+> | Supabase for auth, `video_jobs` queue, storage | **Not used.** `src/lib/supabase.ts` is inert and nothing imports it. There is no database and no auth. |
+> | Replicate webhooks → Supabase edge function state machine | **Client-side polling** of `/api/job-status` every 5s. No webhooks. |
+> | Stripe payment | **Demo stub** (`/api/checkout`) — nothing is charged, ever. |
+> | Google OAuth / YouTube Data API upload | **Demo stub** (`/api/connect-youtube`) — no Google account is contacted. |
+> | ffmpeg stitching worker | **Not built.** The result screen loops three separate 5s clips client-side. |
+> | Persistent render storage | **None.** Replicate output URLs expire in ~1 hour. |
+>
+> Live AI generation *is* real and env-gated on `REPLICATE_API_TOKEN`
+> (kill switch `PUPTV_LIVE=off`). Everything downstream of "here are your
+> clips" is still demo mode. See `README.md` for the as-built contract.
+
 ## One-liner
 
 Upload photos of your dog, and a cartoon adventure series starring *your* dog appears on *your* YouTube — automatically. Proceeds fund dog charities instead of content farms.

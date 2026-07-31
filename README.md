@@ -46,9 +46,23 @@ Fine for the in-session flow; persistent storage is future work.
 - `POST /api/generate-video` `{ stillUrl, petName, theme, sceneIndex }`
   → live `{ predictionId }` | demo `{ demo: true, etaMinutes, sampleYoutubeVideoId, notice? }`
 - `GET /api/job-status?id=` → `{ status, output, error }` (server-side proxy;
-  the Replicate token never reaches the browser)
+  the Replicate token never reaches the browser). Rejects ids that don't match
+  `^[\w-]{8,64}$` with 400; unknown id → 404; demo deployments → 503.
+- `GET /api/health` → `{ live: boolean }`
+- `POST /api/checkout` and `POST /api/connect-youtube` → demo stubs. No payment
+  provider and no Google OAuth are wired up; both always succeed and charge
+  nothing.
 - HTTP 429 (Replicate allows ~2 concurrent predictions) → client waits 45s
   and retries automatically, max 5 times.
+
+Both generation routes tolerate a malformed body (unparseable JSON is treated
+as `{}`) and answer with the demo payload rather than a 500, which is also what
+a legacy request without `photos` / `stillUrl` gets. A request that *does*
+carry photos but whose photos are all unreadable gets a 400 — falling through
+to the demo stills there would show the user a different dog and call it theirs.
+Requests are capped at 5 photos and ~1.1MB per photo, and the client refuses to
+send more than 3.8MB total so it fails with a real message instead of Vercel's
+opaque 4.5MB body rejection.
 
 ## Abuse guard
 
@@ -59,9 +73,13 @@ fallback with a gentle notice, never an error page.
 ## Development
 
 ```bash
-npm install --include=dev
-npm run build        # demo mode, no env needed
+npm install --include=dev   # NODE_ENV=production is set globally on some machines
+npm run build               # demo mode, no env needed
+npm run lint
 ```
+
+`src/lib/supabase.ts` is inert scaffolding for a project that is not in use.
+Nothing imports it; don't wire it up without revisiting the spec.
 
 Env vars: see `.env.local.example`. Kill switch: set `PUPTV_LIVE=off` on
 Vercel to force demo mode without removing the token.
