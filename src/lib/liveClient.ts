@@ -22,6 +22,22 @@ const RETRY_AFTER_MS = 45_000;
 const MAX_START_RETRIES = 5;
 const POLL_INTERVAL_MS = 5_000;
 
+/**
+ * Thrown when a prediction reached a terminal failure state on
+ * Replicate (failed / canceled / succeeded-with-no-output).
+ *
+ * Callers must distinguish this from a timeout or a network blip:
+ * a timed-out prediction is still worth re-polling on retry, but a
+ * terminally failed one never changes, so its id has to be dropped
+ * or "retry" would poll the same corpse forever.
+ */
+export class PredictionFailedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "PredictionFailedError";
+  }
+}
+
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -96,10 +112,10 @@ export async function pollPrediction(predictionId: string, timeoutMs: number): P
     if (!data) continue;
     if (data.status === "succeeded") {
       if (data.output) return data.output;
-      throw new Error("The render finished without an output. Please try again.");
+      throw new PredictionFailedError("The render finished without an output. Please try again.");
     }
     if (data.status === "failed" || data.status === "canceled") {
-      throw new Error(data.error || "The render didn't finish. Please try again.");
+      throw new PredictionFailedError(data.error || "The render didn't finish. Please try again.");
     }
   }
 }
@@ -111,12 +127,22 @@ export async function pollPrediction(predictionId: string, timeoutMs: number): P
 
 const CLIP_JOB_KEY = "puptv.clipJob.v1";
 
+/**
+ * Replicate output URLs (replicate.delivery) expire after ~1 hour, so a
+ * resumed job older than this would restore a screen full of broken
+ * images and dead video sources. Drop it instead and let the user start
+ * over cleanly.
+ */
+const CLIP_JOB_MAX_AGE_MS = 60 * 60 * 1000;
+
 export interface ClipJob {
   petName: string;
   theme: string;
   stills: string[];
   predictionIds: Partial<Record<number, string>>;
   clipUrls: Partial<Record<number, string>>;
+  /** epoch ms; jobs without one predate this field and are treated as stale */
+  createdAt?: number;
 }
 
 export function loadClipJob(): ClipJob | null {
@@ -127,12 +153,18 @@ export function loadClipJob(): ClipJob | null {
     const parsed = JSON.parse(raw) as ClipJob;
     if (!Array.isArray(parsed.stills) || parsed.stills.length !== 3) return null;
     if (typeof parsed.petName !== "string" || typeof parsed.theme !== "string") return null;
+    const createdAt = typeof parsed.createdAt === "number" ? parsed.createdAt : 0;
+    if (Date.now() - createdAt > CLIP_JOB_MAX_AGE_MS) {
+      clearClipJob();
+      return null;
+    }
     return {
       petName: parsed.petName,
       theme: parsed.theme,
       stills: parsed.stills,
       predictionIds: parsed.predictionIds ?? {},
       clipUrls: parsed.clipUrls ?? {},
+      createdAt,
     };
   } catch {
     return null;

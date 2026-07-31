@@ -51,6 +51,18 @@ export async function POST(request: NextRequest) {
       typeof p === "string" && p.startsWith("data:image/") && p.length <= MAX_PHOTO_CHARS
   );
 
+  // Every photo was rejected by the filter (wrong encoding, or each one over
+  // MAX_PHOTO_CHARS). Falling through to the demo response here would hand the
+  // user sample stills of a different dog and call them their own — say so
+  // instead. A request with no `photos` key at all is the legacy demo shape and
+  // still falls through below.
+  if (rawPhotos.length > 0 && photos.length === 0) {
+    return NextResponse.json(
+      { error: "We couldn't read those photos. Please re-add them and try again." },
+      { status: 400 }
+    );
+  }
+
   // Demo mode: no token / kill switch / legacy request shape without photos.
   if (!isLiveEnabled() || photos.length === 0) {
     return demoResponse(petName);
