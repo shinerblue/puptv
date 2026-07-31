@@ -41,8 +41,8 @@ export default function SendToTvModal({ petName, onClose }: SendToTvModalProps) 
         role="dialog"
         aria-modal="true"
         aria-labelledby="send-to-tv-title"
-        className="rounded-2xl p-8 w-full max-w-md relative"
-        style={{ background: "#FFFFFF" }}
+        className="card-warm p-8 w-full max-w-md relative"
+        style={{ boxShadow: "0 24px 60px rgba(43,28,12,0.35)" }}
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -50,23 +50,23 @@ export default function SendToTvModal({ petName, onClose }: SendToTvModalProps) 
           onClick={onClose}
           aria-label="Close"
           className="absolute rounded-full flex items-center justify-center"
-          style={{ top: 16, right: 16, width: 32, height: 32, background: "#F5F5F5", border: "none", cursor: "pointer" }}
+          style={{ top: 16, right: 16, width: 36, height: 36, background: "#FFEDD5", border: "none", cursor: "pointer" }}
         >
-          <X className="w-4 h-4" style={{ color: "#6E6E73" }} />
+          <X className="w-4 h-4" style={{ color: "#C2410C" }} />
         </button>
 
         {status === "sent" ? (
           <div className="text-center py-4">
             <div
-              className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
-              style={{ background: "#ECFDF5" }}
+              className="icon-well icon-well-leaf mx-auto mb-4 pop-in"
+              style={{ borderRadius: 9999 }}
             >
-              <Check className="w-6 h-6" style={{ color: "#10B981" }} />
+              <Check className="w-6 h-6" style={{ color: "#047857" }} />
             </div>
             <p id="send-to-tv-title" className="font-semibold mb-2" style={{ fontSize: "17px", color: "#1D1D1F" }}>
               Demo: they&apos;ll get it on their channel
             </p>
-            <p className="text-sm" style={{ color: "#6E6E73", lineHeight: 1.5 }}>
+            <p className="text-sm" style={{ color: "#6B625B", lineHeight: 1.5 }}>
               In production, {email} gets an email with a link — {name}&apos;s episode shows up on their
               YouTube automatically. No account, no password.
             </p>
@@ -76,7 +76,7 @@ export default function SendToTvModal({ petName, onClose }: SendToTvModalProps) 
             <h3 id="send-to-tv-title" className="font-bold mb-2" style={{ fontSize: "22px", color: "#1D1D1F" }}>
               Send this episode to another TV
             </h3>
-            <p className="text-sm mb-5" style={{ color: "#6E6E73", lineHeight: 1.5 }}>
+            <p className="text-sm mb-5" style={{ color: "#6B625B", lineHeight: 1.5 }}>
               Enter their email — we&apos;ll send {name}&apos;s episode straight to their channel. Demo mode:
               no email is actually sent.
             </p>
@@ -95,18 +95,12 @@ export default function SendToTvModal({ petName, onClose }: SendToTvModalProps) 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="grandma@example.com"
-              className="w-full rounded-xl px-4 py-4 outline-none border-2 mb-4"
-              style={{ fontSize: "16px", borderColor: "#E5E5E5", color: "#1D1D1F" }}
+              className="field field-sm mb-4"
             />
             <button
               onClick={handleSend}
               disabled={!email.trim() || status === "sending"}
-              className="btn-large w-full rounded-2xl flex items-center justify-center gap-2"
-              style={{
-                background: !email.trim() ? "#E5E5E5" : "#1D1D1F",
-                color: !email.trim() ? "#9CA3AF" : "#FFFFFF",
-                cursor: !email.trim() ? "not-allowed" : "pointer",
-              }}
+              className="btn-pill btn-soft btn-block btn-ink"
             >
               {status === "sending" ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
               {status === "sending" ? "Sending…" : "Send (demo)"}

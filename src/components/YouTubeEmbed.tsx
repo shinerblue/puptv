@@ -9,7 +9,7 @@ export default function YouTubeEmbed({ videoId, title = "ToonTails sample episod
   return (
     <div
       className="aspect-video rounded-2xl overflow-hidden border"
-      style={{ borderColor: "#E5E5E5", background: "#000000" }}
+      style={{ borderColor: "#F0E2D2", background: "#000000" }}
     >
       <iframe
         className="w-full h-full"

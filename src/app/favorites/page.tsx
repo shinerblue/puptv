@@ -4,11 +4,12 @@ import { useState } from "react";
 import { CheckSquare, Square, ExternalLink, Loader2, Sparkles } from "lucide-react";
 import SimpleNav from "@/components/SimpleNav";
 import SiteFooter from "@/components/SiteFooter";
+import Reveal from "@/components/Reveal";
 
 const EPISODES = [
-  { id: "park", label: "Park adventure", videoId: "PIcIfIdC1kA" },
-  { id: "beach", label: "Beach adventure", videoId: "LjfZLmGnw6g" },
-  { id: "space", label: "Space adventure", videoId: "799im9gjl_I" },
+  { id: "park", label: "Park adventure", videoId: "PIcIfIdC1kA", note: "Fetch, butterflies, good light." },
+  { id: "beach", label: "Beach adventure", videoId: "LjfZLmGnw6g", note: "Waves, warm sand, zero worries." },
+  { id: "space", label: "Space adventure", videoId: "799im9gjl_I", note: "Stars, planets, a very small helmet." },
 ];
 
 const MEGA_LOOP_ID = "XO3ExfNCFaY";
@@ -28,69 +29,84 @@ export default function FavoritesPage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: "#FAFAFA" }}>
+    <div className="min-h-screen warm-page">
       <SimpleNav />
 
-      <section className="max-w-3xl mx-auto px-6 pt-20 pb-12 text-center">
+      <section className="max-w-3xl mx-auto px-6 pt-16 pb-12 text-center">
+        <span className="chip mb-6">
+          <Sparkles className="w-4 h-4" />
+          Build your own channel
+        </span>
         <h1
           className="font-bold mb-5"
-          style={{ fontSize: "clamp(30px, 6vw, 48px)", letterSpacing: "-0.03em", lineHeight: 1.1, color: "#1D1D1F" }}
+          style={{ fontSize: "clamp(30px, 6vw, 48px)", letterSpacing: "-0.03em", lineHeight: 1.08, color: "#1D1D1F" }}
         >
-          Pick your favorite episodes
+          Pick the episodes
+          <br />
+          <span style={{ color: "#C2410C" }}>they love most</span>
         </h1>
-        <p className="text-xl mx-auto leading-relaxed" style={{ color: "#6E6E73", maxWidth: "560px" }}>
-          Build a continuous loop of your dog&apos;s best adventures — it plays like real TV, no
-          clicking play every single minute.
+        <p className="text-xl mx-auto leading-relaxed" style={{ color: "#6B625B", maxWidth: "540px" }}>
+          Stitch your dog&apos;s best adventures into one continuous loop. It plays like real
+          television — nobody has to press play every minute.
         </p>
       </section>
 
       <section className="max-w-4xl mx-auto px-6 pb-10">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          {EPISODES.map((ep) => {
+          {EPISODES.map((ep, i) => {
             const isSelected = selected.includes(ep.id);
             return (
-              <div
-                key={ep.id}
-                className={`pick-card rounded-2xl overflow-hidden ${isSelected ? "selected" : ""}`}
-                style={{ cursor: "default" }}
-              >
-                <button
-                  type="button"
-                  role="checkbox"
-                  aria-checked={isSelected}
-                  onClick={() => toggle(ep.id)}
-                  className="w-full text-left"
-                  style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
+              <Reveal key={ep.id} delay={i * 0.08} className="h-full">
+                <div
+                  className={`pick-card pick-card-img h-full ${isSelected ? "selected" : ""}`}
+                  style={{ cursor: "default" }}
                 >
-                  <div className="relative aspect-video" style={{ background: "#000000" }}>
+                  <button
+                    type="button"
+                    role="checkbox"
+                    aria-checked={isSelected}
+                    onClick={() => toggle(ep.id)}
+                    className="w-full text-left"
+                    style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: "inherit" }}
+                  >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={`https://i.ytimg.com/vi/${ep.videoId}/hqdefault.jpg`}
                       alt={ep.label}
-                      className="w-full h-full object-cover"
+                      className="pick-art"
                     />
+                    <div className="pick-body">
+                      <div className="flex items-center gap-2">
+                        {isSelected ? (
+                          <CheckSquare className="w-5 h-5" style={{ color: "#FFFFFF", flexShrink: 0 }} />
+                        ) : (
+                          <Square className="w-5 h-5" style={{ color: "#6B625B", flexShrink: 0 }} />
+                        )}
+                        <span className="font-semibold" style={{ fontSize: "16px" }}>
+                          {ep.label}
+                        </span>
+                      </div>
+                      <p
+                        className="text-xs mt-1 leading-snug"
+                        style={{ color: isSelected ? "#D6CCC0" : "#6B625B" }}
+                      >
+                        {ep.note}
+                      </p>
+                    </div>
+                  </button>
+                  <div className="px-4 pb-4">
+                    <a
+                      href={`https://www.youtube.com/watch?v=${ep.videoId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-semibold"
+                      style={{ color: isSelected ? "#D6CCC0" : "#C2410C" }}
+                    >
+                      Watch the sample <ExternalLink className="w-3 h-3" />
+                    </a>
                   </div>
-                  <div className="p-4 flex items-center gap-2">
-                    {isSelected ? (
-                      <CheckSquare className="w-5 h-5" style={{ color: "#FFFFFF", flexShrink: 0 }} />
-                    ) : (
-                      <Square className="w-5 h-5" style={{ color: "#6E6E73", flexShrink: 0 }} />
-                    )}
-                    <span className="font-semibold" style={{ fontSize: "15px" }}>{ep.label}</span>
-                  </div>
-                </button>
-                <div className="px-4 pb-4">
-                  <a
-                    href={`https://www.youtube.com/watch?v=${ep.videoId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs"
-                    style={{ color: isSelected ? "#D4D4D4" : "#6E6E73" }}
-                  >
-                    Watch sample <ExternalLink className="w-3 h-3" />
-                  </a>
                 </div>
-              </div>
+              </Reveal>
             );
           })}
         </div>
@@ -98,68 +114,66 @@ export default function FavoritesPage() {
 
       <section className="max-w-2xl mx-auto px-6 pb-16 text-center">
         {status === "done" ? (
-          <div className="rounded-2xl p-6 border" style={{ background: "#ECFDF5", borderColor: "#A7F3D0" }}>
-            <p className="font-semibold" style={{ color: "#047857", fontSize: "17px" }}>
-              🐾 Your 2-hour loop is rendering — it will appear on your channel tonight.
+          <div className="card-warm p-6 pop-in" style={{ background: "#ECFDF5", borderColor: "#A7F3D0" }}>
+            <p className="font-semibold" style={{ color: "#047857", fontSize: "18px" }}>
+              🐾 Your two-hour loop is rendering — it&apos;ll be on the channel tonight.
             </p>
           </div>
         ) : (
           <button
             onClick={handleCreateLoop}
             disabled={selected.length === 0 || status === "loading"}
-            className="btn-large rounded-2xl px-10 inline-flex items-center justify-center gap-2"
-            style={{
-              background: selected.length === 0 ? "#E5E5E5" : "#1D1D1F",
-              color: selected.length === 0 ? "#9CA3AF" : "#FFFFFF",
-              cursor: selected.length === 0 ? "not-allowed" : "pointer",
-            }}
+            className="btn-pill btn-ink"
           >
             {status === "loading" ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" /> Starting your loop…
               </>
             ) : (
-              "Create my continuous loop"
+              "Make my continuous loop"
             )}
           </button>
         )}
-        <p className="text-sm mt-4" style={{ color: "#6E6E73" }}>
-          {selected.length} of {EPISODES.length} episodes selected
+        <p className="text-sm mt-4" style={{ color: "#6B625B" }}>
+          {selected.length} of {EPISODES.length} episodes picked
         </p>
       </section>
 
       <section className="max-w-2xl mx-auto px-6 pb-24">
-        <div className="rounded-2xl p-6 border flex items-center gap-5" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
-          <div className="rounded-xl overflow-hidden flex-shrink-0" style={{ width: 120 }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`https://i.ytimg.com/vi/${MEGA_LOOP_ID}/hqdefault.jpg`}
-              alt="5-minute mega-loop sample"
-              className="w-full"
-              style={{ display: "block", aspectRatio: "16/9", objectFit: "cover" }}
-            />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <Sparkles className="w-4 h-4" style={{ color: "#F97316" }} />
-              <span className="font-semibold" style={{ fontSize: "16px", color: "#1D1D1F" }}>
-                Already have a favorite? Here&apos;s a real one
-              </span>
+        <Reveal>
+          <div className="card-warm card-lift p-6 flex flex-col sm:flex-row items-center gap-5">
+            <div className="tile flex-shrink-0" style={{ width: 140 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`https://i.ytimg.com/vi/${MEGA_LOOP_ID}/hqdefault.jpg`}
+                alt="Thumbnail of the five-minute mega-loop sample"
+                className="w-full"
+                style={{ display: "block", aspectRatio: "16/9", objectFit: "cover" }}
+              />
             </div>
-            <p className="text-sm mb-3" style={{ color: "#6E6E73" }}>
-              A 5-minute mega-loop sample, rendered end to end — the same technique your loop uses.
-            </p>
-            <a
-              href={`https://www.youtube.com/watch?v=${MEGA_LOOP_ID}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-sm font-semibold"
-              style={{ color: "#1D1D1F" }}
-            >
-              Watch on YouTube <ExternalLink className="w-4 h-4" />
-            </a>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <Sparkles className="w-4 h-4" style={{ color: "#C2410C" }} />
+                <span className="font-semibold" style={{ fontSize: "17px", color: "#1D1D1F" }}>
+                  Want proof? Here&apos;s a real one
+                </span>
+              </div>
+              <p className="text-sm mb-3" style={{ color: "#6B625B", lineHeight: 1.55 }}>
+                A five-minute mega-loop, rendered end to end with exactly the technique your loop
+                will use.
+              </p>
+              <a
+                href={`https://www.youtube.com/watch?v=${MEGA_LOOP_ID}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-sm font-semibold"
+                style={{ color: "#C2410C" }}
+              >
+                Watch on YouTube <ExternalLink className="w-4 h-4" />
+              </a>
+            </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <SiteFooter />

@@ -26,7 +26,7 @@ export default function CharityPicker({ selected, onSelect }: CharityPickerProps
               style={{
                 width: 20,
                 height: 20,
-                border: `2px solid ${isSelected ? "#FFFFFF" : "#D4D4D4"}`,
+                border: `2px solid ${isSelected ? "#FFFFFF" : "#D6CCC0"}`,
                 background: isSelected ? "#FFFFFF" : "transparent",
                 marginTop: "2px",
               }}
@@ -40,11 +40,11 @@ export default function CharityPicker({ selected, onSelect }: CharityPickerProps
                 {c.name}
               </div>
               {c.location && (
-                <div style={{ fontSize: "12px", marginTop: "2px", color: isSelected ? "#D4D4D4" : "#6E6E73" }}>
+                <div style={{ fontSize: "12px", marginTop: "2px", color: isSelected ? "#D6CCC0" : "#6B625B" }}>
                   {c.location}
                 </div>
               )}
-              <div className="text-sm mt-1" style={{ color: isSelected ? "#D4D4D4" : "#6E6E73", lineHeight: 1.5 }}>
+              <div className="text-sm mt-1" style={{ color: isSelected ? "#D6CCC0" : "#6B625B", lineHeight: 1.5 }}>
                 {c.blurb}
               </div>
             </div>

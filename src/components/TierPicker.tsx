@@ -34,21 +34,20 @@ export default function TierPicker({ selected, onSelect, labelledBy }: TierPicke
             aria-disabled={!tier.selectable}
             disabled={!tier.selectable}
             onClick={() => tier.selectable && onSelect(tier.id)}
-            className={`pick-card rounded-2xl p-4 ${isSelected ? "selected" : ""} ${!tier.selectable ? "disabled" : ""}`}
+            className={`pick-card p-5 ${isSelected ? "selected" : ""} ${!tier.selectable ? "disabled" : ""}`}
           >
-            <div className="flex items-center justify-between">
-              <div className="font-bold" style={{ fontSize: "20px" }}>{tier.price}</div>
-              {!tier.selectable && (
-                <span
-                  className="text-xs font-semibold uppercase px-2 py-1 rounded-full"
-                  style={{ background: "#F5F5F5", color: "#6E6E73", letterSpacing: "0.05em" }}
-                >
-                  Soon
+            <div className="flex items-center justify-between gap-2">
+              <div className="font-bold" style={{ fontSize: "22px" }}>{tier.price}</div>
+              {!tier.selectable ? (
+                <span className="chip chip-quiet chip-sm uppercase">Soon</span>
+              ) : isSelected ? (
+                <span className="chip chip-sm" style={{ background: "#FFFFFF", borderColor: "#FFFFFF" }}>
+                  Picked
                 </span>
-              )}
+              ) : null}
             </div>
-            <div className="font-semibold mt-1" style={{ fontSize: "16px" }}>{tier.name}</div>
-            <div className="text-xs mt-2" style={{ color: isSelected ? "#D4D4D4" : "#6E6E73", lineHeight: 1.5 }}>
+            <div className="font-semibold mt-1" style={{ fontSize: "17px" }}>{tier.name}</div>
+            <div className="text-xs mt-2" style={{ color: isSelected ? "#D6CCC0" : "#6B625B", lineHeight: 1.5 }}>
               {tier.description}
             </div>
           </button>

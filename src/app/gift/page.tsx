@@ -1,25 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { Gift, Check } from "lucide-react";
+import { Gift, Check, Heart } from "lucide-react";
 import SimpleNav from "@/components/SimpleNav";
 import SiteFooter from "@/components/SiteFooter";
+import Reveal from "@/components/Reveal";
 
 const STEPS = [
   {
-    num: "01",
-    title: "You upload & pay",
-    desc: "Add photos of the dog and complete payment. One time, from your phone.",
+    num: "1",
+    badge: "badge-num",
+    title: "You upload and pay",
+    desc: "Add photos of the dog and pay once, from your phone. Takes about five minutes.",
   },
   {
-    num: "02",
-    title: "We create the episode",
-    desc: "Same process as always — a cartoon adventure starring their dog.",
+    num: "2",
+    badge: "badge-num badge-num-sky",
+    title: "We draw the episode",
+    desc: "Same process as always — a cartoon adventure starring their dog, not a stranger's.",
   },
   {
-    num: "03",
+    num: "3",
+    badge: "badge-num badge-num-leaf",
     title: "It lands on their TV",
-    desc: "We email them a simple channel link. No signup, no passwords — they just click and watch.",
+    desc: "They get one email with one link. No signup, no password, nothing to install. They click, it plays.",
   },
 ];
 
@@ -29,108 +33,135 @@ export default function GiftPage() {
   const [recipientEmail, setRecipientEmail] = useState("");
   const [sent, setSent] = useState(false);
 
+  const canSend = Boolean(recipientName.trim() && recipientEmail.trim());
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!recipientName.trim() || !recipientEmail.trim()) return;
+    if (!canSend) return;
     setSent(true);
   };
 
   return (
-    <div className="min-h-screen" style={{ background: "#FAFAFA" }}>
+    <div className="min-h-screen warm-page">
       <SimpleNav />
 
-      <section className="max-w-3xl mx-auto px-6 pt-20 pb-10 text-center">
-        <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-8"
-          style={{ background: "#FFF7ED" }}
-        >
-          <Gift className="w-7 h-7" style={{ color: "#F97316" }} />
+      <section className="max-w-3xl mx-auto px-6 pt-16 pb-10 text-center">
+        <div className="icon-well mx-auto mb-7 float-soft">
+          <Gift className="w-6 h-6" style={{ color: "#C2410C" }} />
         </div>
         <h1
           className="font-bold mb-5"
-          style={{ fontSize: "clamp(30px, 6vw, 52px)", letterSpacing: "-0.03em", lineHeight: 1.1, color: "#1D1D1F" }}
+          style={{ fontSize: "clamp(30px, 6vw, 52px)", letterSpacing: "-0.03em", lineHeight: 1.08, color: "#1D1D1F" }}
         >
-          Send it to Grandma&apos;s TV
+          Send it straight to
+          <br />
+          <span style={{ color: "#C2410C" }}>Grandma&apos;s TV</span>
         </h1>
-        <p className="text-xl mx-auto leading-relaxed" style={{ color: "#6E6E73", maxWidth: "560px" }}>
-          Your parents have a TV. You have a phone. That&apos;s all this takes.
+        <p className="text-xl mx-auto leading-relaxed" style={{ color: "#6B625B", maxWidth: "540px" }}>
+          Your parents have a TV. You have a phone. That is genuinely all this takes.
         </p>
       </section>
 
+      <section className="max-w-4xl mx-auto px-6 pb-14">
+        <Reveal>
+          <div className="tile tile-hover tilt-b">
+            {/* eslint-disable-next-line @next/next/no-img-element -- static demo art */}
+            <img
+              src="/demo/birthday.jpg"
+              alt="Cartoon of Dutch in a party hat beside a birthday cake, surrounded by balloons and confetti"
+              loading="lazy"
+              style={{ aspectRatio: "21 / 9" }}
+            />
+          </div>
+          <p className="text-sm mt-5 text-center" style={{ color: "#6B625B" }}>
+            Birthdays, Christmas, or a plain Tuesday — we&apos;ll work the occasion into the story.
+          </p>
+        </Reveal>
+      </section>
+
       <section className="max-w-2xl mx-auto px-6 pb-16">
-        <div className="rounded-3xl p-8 md:p-10 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
-          <p className="mb-4 leading-relaxed" style={{ color: "#1D1D1F", fontSize: "17px" }}>
-            You buy a ToonTails gift — pick &ldquo;give as gift&rdquo; at checkout. Upload photos of the dog —
-            you send them, you pay. That&apos;s it.
-          </p>
-          <p className="mb-4 leading-relaxed" style={{ color: "#6E6E73", fontSize: "16px" }}>
-            We create the episode on your side. We send your parents an email with a simple YouTube
-            channel link. No account signup. They click, their TV plays the new show.
-          </p>
-          <p className="mb-4 leading-relaxed" style={{ color: "#6E6E73", fontSize: "16px" }}>
-            Every week, new episodes land on that same channel. Your parents see the dog living
-            adventures. They tell their friends about it. The dog becomes the star of the family.
-          </p>
-          <p className="font-semibold" style={{ color: "#1D1D1F", fontSize: "16px" }}>
-            No technical setup. No passwords. No &ldquo;can you help me with this?&rdquo;
-          </p>
-        </div>
+        <Reveal>
+          <div className="card-warm p-8 md:p-10">
+            <p className="mb-4 leading-relaxed" style={{ color: "#1D1D1F", fontSize: "18px" }}>
+              You buy a ToonTails gift — pick &ldquo;give as gift&rdquo; at checkout. You upload
+              the photos, you pay. That&apos;s your whole job.
+            </p>
+            <p className="mb-4 leading-relaxed" style={{ color: "#6B625B", fontSize: "16px" }}>
+              We make the episode on your side and email them a simple YouTube channel link. No
+              account to create. They click it, and their TV plays the new show.
+            </p>
+            <p className="mb-5 leading-relaxed" style={{ color: "#6B625B", fontSize: "16px" }}>
+              Every week, new episodes land on that same channel. They watch the dog live
+              adventures. They tell their friends. The dog becomes the star of the family.
+            </p>
+            <div className="card-tint p-5 flex items-start gap-3">
+              <Heart className="w-5 h-5 flex-shrink-0" style={{ color: "#C2410C", marginTop: "2px" }} />
+              <p className="font-semibold" style={{ color: "#1D1D1F", fontSize: "16px" }}>
+                No technical setup. No passwords. No &ldquo;can you come over and help me with
+                this?&rdquo;
+              </p>
+            </div>
+          </div>
+        </Reveal>
       </section>
 
       <section className="max-w-4xl mx-auto px-6 pb-20">
-        <h2
-          className="font-bold text-center mb-14"
-          style={{ fontSize: "clamp(26px, 4vw, 34px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
-        >
-          Three steps, start to finish
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
-          {STEPS.map((s) => (
-            <div key={s.num}>
-              <span className="block text-xs font-mono mb-4" style={{ color: "#D4D4D4", letterSpacing: "0.1em" }}>
-                {s.num}
-              </span>
-              <h3 className="text-lg font-semibold mb-2" style={{ color: "#1D1D1F" }}>
-                {s.title}
-              </h3>
-              <p className="leading-relaxed text-sm" style={{ color: "#6E6E73" }}>
-                {s.desc}
-              </p>
-            </div>
+        <Reveal>
+          <h2
+            className="font-bold text-center mb-10"
+            style={{ fontSize: "clamp(26px, 4vw, 34px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
+          >
+            Three steps, start to finish
+          </h2>
+        </Reveal>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {STEPS.map((s, i) => (
+            <Reveal key={s.num} delay={i * 0.08} className="h-full">
+              <div className="card-warm card-lift p-7 h-full">
+                <div className={`${s.badge} mb-4`}>{s.num}</div>
+                <h3 className="font-semibold mb-2" style={{ fontSize: "18px", color: "#1D1D1F" }}>
+                  {s.title}
+                </h3>
+                <p className="leading-relaxed text-sm" style={{ color: "#6B625B" }}>
+                  {s.desc}
+                </p>
+              </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
       <section className="max-w-2xl mx-auto px-6 pb-24">
-        <div className="rounded-3xl p-8 md:p-10 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+        <div className="card-warm p-8 md:p-10">
           {sent ? (
             <div className="text-center py-6">
-              <div
-                className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5"
-                style={{ background: "#ECFDF5" }}
-              >
-                <Check className="w-6 h-6" style={{ color: "#10B981" }} />
+              <div className="icon-well icon-well-leaf mx-auto mb-5 pop-in">
+                <Check className="w-6 h-6" style={{ color: "#047857" }} />
               </div>
-              <h3 className="font-bold mb-3" style={{ fontSize: "22px", color: "#1D1D1F" }}>
-                Demo: gift on its way
+              <h3 className="font-bold mb-3" style={{ fontSize: "23px", color: "#1D1D1F" }}>
+                On its way (in the demo, anyway)
               </h3>
-              <p className="text-sm leading-relaxed" style={{ color: "#6E6E73" }}>
-                {recipientName} will get an email with a link to {dogName || "your dog"}&apos;s channel.
-                This is a demo — no email was actually sent, and nothing was charged.
+              <p className="text-sm leading-relaxed" style={{ color: "#6B625B" }}>
+                {recipientName} would get an email with a link to {dogName || "your dog"}&apos;s
+                channel. This is a demo — no email was sent, and nothing was charged.
               </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
-              <h3 className="font-bold mb-2" style={{ fontSize: "22px", color: "#1D1D1F" }}>
+              <h3 className="font-bold mb-2" style={{ fontSize: "23px", color: "#1D1D1F" }}>
                 Send a ToonTails gift
               </h3>
-              <p className="text-sm mb-6" style={{ color: "#6E6E73" }}>
-                Demo form — fill this in to see how the gift flow ends.
+              <p className="text-sm mb-7" style={{ color: "#6B625B" }}>
+                Demo form — fill it in and you&apos;ll see exactly how the gift flow ends.
               </p>
 
               <div className="mb-5">
-                <label htmlFor="gift-dog-name" className="block font-semibold mb-2" style={{ fontSize: "15px", color: "#1D1D1F" }}>
-                  Dog&apos;s name
+                <label
+                  htmlFor="gift-dog-name"
+                  className="block font-semibold mb-2"
+                  style={{ fontSize: "16px", color: "#1D1D1F" }}
+                >
+                  What&apos;s the dog&apos;s name?
                 </label>
                 <input
                   id="gift-dog-name"
@@ -139,13 +170,16 @@ export default function GiftPage() {
                   value={dogName}
                   onChange={(e) => setDogName(e.target.value)}
                   placeholder="Dutch, Luna, Max…"
-                  className="w-full rounded-xl px-4 py-3 outline-none border-2"
-                  style={{ fontSize: "16px", background: "#FFFFFF", borderColor: "#E5E5E5", color: "#1D1D1F" }}
+                  className="field field-sm"
                 />
               </div>
               <div className="mb-5">
-                <label htmlFor="gift-recipient-name" className="block font-semibold mb-2" style={{ fontSize: "15px", color: "#1D1D1F" }}>
-                  Recipient&apos;s name
+                <label
+                  htmlFor="gift-recipient-name"
+                  className="block font-semibold mb-2"
+                  style={{ fontSize: "16px", color: "#1D1D1F" }}
+                >
+                  Who&apos;s it for?
                 </label>
                 <input
                   id="gift-recipient-name"
@@ -154,13 +188,16 @@ export default function GiftPage() {
                   value={recipientName}
                   onChange={(e) => setRecipientName(e.target.value)}
                   placeholder="Grandma Sue"
-                  className="w-full rounded-xl px-4 py-3 outline-none border-2"
-                  style={{ fontSize: "16px", background: "#FFFFFF", borderColor: "#E5E5E5", color: "#1D1D1F" }}
+                  className="field field-sm"
                 />
               </div>
               <div className="mb-8">
-                <label htmlFor="gift-recipient-email" className="block font-semibold mb-2" style={{ fontSize: "15px", color: "#1D1D1F" }}>
-                  Recipient&apos;s email
+                <label
+                  htmlFor="gift-recipient-email"
+                  className="block font-semibold mb-2"
+                  style={{ fontSize: "16px", color: "#1D1D1F" }}
+                >
+                  Their email address
                 </label>
                 <input
                   id="gift-recipient-email"
@@ -169,20 +206,11 @@ export default function GiftPage() {
                   value={recipientEmail}
                   onChange={(e) => setRecipientEmail(e.target.value)}
                   placeholder="grandma@example.com"
-                  className="w-full rounded-xl px-4 py-3 outline-none border-2"
-                  style={{ fontSize: "16px", background: "#FFFFFF", borderColor: "#E5E5E5", color: "#1D1D1F" }}
+                  className="field field-sm"
                 />
               </div>
-              <button
-                type="submit"
-                disabled={!recipientName.trim() || !recipientEmail.trim()}
-                className="btn-large w-full rounded-2xl"
-                style={{
-                  background: !recipientName.trim() || !recipientEmail.trim() ? "#E5E5E5" : "#1D1D1F",
-                  color: !recipientName.trim() || !recipientEmail.trim() ? "#9CA3AF" : "#FFFFFF",
-                  cursor: !recipientName.trim() || !recipientEmail.trim() ? "not-allowed" : "pointer",
-                }}
-              >
+              <button type="submit" disabled={!canSend} className="btn-pill btn-soft btn-block btn-ink">
+                <Gift className="w-5 h-5" />
                 Send the gift (demo) →
               </button>
             </form>

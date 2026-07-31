@@ -54,7 +54,7 @@ function SubmitButton({ label }: { label: string }) {
       style={{
         minHeight: "52px",
         fontSize: "15px",
-        background: "#FFFFFF",
+        background: "#FFFDF9",
         borderColor: "#DADCE0",
         color: "#3C4043",
         cursor: pending ? "default" : "pointer",

@@ -42,7 +42,7 @@ export default function PrivacyPicker({ selected, onSelect }: PrivacyPickerProps
             <div
               className="step-dot"
               style={{
-                border: `2px solid ${isSelected ? "#FFFFFF" : "#D4D4D4"}`,
+                border: `2px solid ${isSelected ? "#FFFFFF" : "#D6CCC0"}`,
                 background: isSelected ? "#FFFFFF" : "transparent",
                 marginTop: "2px",
               }}
@@ -53,7 +53,7 @@ export default function PrivacyPicker({ selected, onSelect }: PrivacyPickerProps
               <div className="font-semibold" style={{ fontSize: "17px" }}>{opt.label}</div>
               <div
                 className="text-sm mt-1"
-                style={{ color: isSelected ? "#D4D4D4" : "#6E6E73", lineHeight: 1.5 }}
+                style={{ color: isSelected ? "#D6CCC0" : "#6B625B", lineHeight: 1.5 }}
               >
                 {opt.desc}
               </div>

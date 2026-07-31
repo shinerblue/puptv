@@ -36,10 +36,10 @@ export default function OccasionPicker({ selected, onSelect, labelledBy }: Occas
             role="radio"
             aria-checked={isSelected}
             onClick={() => onSelect(isSelected ? "" : occ.id)}
-            className={`pick-card rounded-2xl p-4 ${isSelected ? "selected" : ""}`}
+            className={`pick-card p-5 ${isSelected ? "selected" : ""}`}
           >
-            <div className="text-3xl mb-2">{occ.emoji}</div>
-            <div className="font-semibold" style={{ fontSize: "16px" }}>
+            <div className="text-4xl mb-2" aria-hidden="true">{occ.emoji}</div>
+            <div className="font-semibold" style={{ fontSize: "17px" }}>
               {occ.label}
             </div>
           </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { User } from "lucide-react";
+import { User, PawPrint } from "lucide-react";
 import SimpleNav from "@/components/SimpleNav";
 import SiteFooter from "@/components/SiteFooter";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
@@ -18,22 +18,26 @@ export default function AccountPage() {
   const { configured, user } = useAuthState();
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#FAFAFA" }}>
+    <div className="min-h-screen flex flex-col warm-page">
       <SimpleNav hideCta />
-      <main className="flex-1 max-w-xl mx-auto px-6 pt-20 pb-24 w-full">
+      <main className="flex-1 max-w-xl mx-auto px-6 pt-16 pb-24 w-full">
+        <span className="chip mb-5">
+          <PawPrint className="w-4 h-4" />
+          Your corner of ToonTails
+        </span>
         <h1
-          className="font-bold mb-8"
+          className="font-bold mb-8 mt-2"
           style={{ fontSize: "clamp(28px,5vw,38px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
         >
           Your account
         </h1>
 
         {!configured && (
-          <div className="rounded-2xl p-6 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+          <div className="card-warm p-7">
             <p className="font-semibold mb-2" style={{ color: "#1D1D1F", fontSize: "17px" }}>
               Sign-in is coming soon
             </p>
-            <p className="text-sm" style={{ color: "#6E6E73", lineHeight: 1.6 }}>
+            <p className="text-sm" style={{ color: "#6B625B", lineHeight: 1.6 }}>
               We&apos;re finishing Google sign-in so your dog&apos;s episodes can publish straight to
               your own YouTube channel automatically. There&apos;s nothing to do here yet — you can
               still create episodes in demo mode right now.
@@ -42,8 +46,8 @@ export default function AccountPage() {
         )}
 
         {configured && !user && (
-          <div className="rounded-2xl p-6 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
-            <p className="mb-5" style={{ color: "#6E6E73", lineHeight: 1.6, fontSize: "17px" }}>
+          <div className="card-warm p-7">
+            <p className="mb-5" style={{ color: "#6B625B", lineHeight: 1.6, fontSize: "17px" }}>
               Sign in with Google so your dog&apos;s episodes can publish straight to your own
               YouTube channel.
             </p>
@@ -52,7 +56,7 @@ export default function AccountPage() {
         )}
 
         {configured && user && (
-          <div className="rounded-2xl p-6 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+          <div className="card-warm p-7">
             <div className="flex items-center gap-4 mb-6">
               {user.image ? (
                 // eslint-disable-next-line @next/next/no-img-element -- external Google avatar
@@ -65,26 +69,26 @@ export default function AccountPage() {
               ) : (
                 <div
                   className="rounded-full flex items-center justify-center"
-                  style={{ width: 56, height: 56, background: "#F5F5F5" }}
+                  style={{ width: 56, height: 56, background: "#FFF1E0" }}
                 >
-                  <User className="w-6 h-6" style={{ color: "#6E6E73" }} />
+                  <User className="w-6 h-6" style={{ color: "#6B625B" }} />
                 </div>
               )}
               <div>
                 <p className="font-semibold" style={{ color: "#1D1D1F", fontSize: "18px" }}>
                   {firstNameOf(user)}
                 </p>
-                <p className="text-sm" style={{ color: "#6E6E73" }}>
+                <p className="text-sm" style={{ color: "#6B625B" }}>
                   {user.email}
                 </p>
               </div>
             </div>
 
-            <div className="rounded-xl p-4 mb-6" style={{ background: "#FFF7ED" }}>
+            <div className="card-tint p-5 mb-6">
               <p className="text-sm font-semibold mb-1" style={{ color: "#1D1D1F" }}>
                 What we store
               </p>
-              <p className="text-sm" style={{ color: "#6E6E73", lineHeight: 1.6 }}>
+              <p className="text-sm" style={{ color: "#6B625B", lineHeight: 1.6 }}>
                 Just this session cookie in your browser — your name, email and photo, exactly as
                 Google gave them to us. ToonTails has no database. Nothing about you is saved on our
                 servers, and signing out anywhere clears it everywhere.
@@ -94,8 +98,7 @@ export default function AccountPage() {
             <form action={signOutEverywhere}>
               <button
                 type="submit"
-                className="btn-large w-full rounded-2xl border-2"
-                style={{ borderColor: "#E5E5E5", color: "#1D1D1F", background: "#FFFFFF" }}
+                className="btn-pill btn-soft btn-block btn-ghost"
               >
                 Sign out
               </button>

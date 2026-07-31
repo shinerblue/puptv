@@ -5,33 +5,36 @@ import AccountMenu from "@/components/AccountMenu";
 
 interface SimpleNavProps {
   hideCta?: boolean;
+  /** /memorial only — drops the colour and the wag, keeps the layout. */
   muted?: boolean;
 }
 
 export default function SimpleNav({ hideCta = false, muted = false }: SimpleNavProps) {
   return (
     <nav
-      className="sticky top-0 z-50 border-b"
-      style={{
-        background: "rgba(255,255,255,0.92)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        borderColor: "#E5E5E5",
-      }}
+      className="sticky top-0 z-50 nav-warm"
+      style={muted ? { background: "rgba(250,247,243,0.92)", borderColor: "#E8E1D8" } : undefined}
     >
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight" style={{ color: muted ? "#6E6E73" : "#1D1D1F" }}>
+        <Link
+          href="/"
+          className={`flex items-center gap-2 font-bold text-xl tracking-tight ${muted ? "" : "wag-host"}`}
+          style={{ color: muted ? "#6B625B" : "#1D1D1F" }}
+        >
           {/* eslint-disable-next-line @next/next/no-img-element -- small static brand asset */}
-          <img src="/brand/toontails-icon.png" alt="" width={28} height={28} style={{ borderRadius: 8 }} />
+          <img
+            src="/brand/toontails-icon.png"
+            alt=""
+            width={32}
+            height={32}
+            className={muted ? "" : "wag"}
+            style={{ borderRadius: 10, opacity: muted ? 0.75 : 1 }}
+          />
           ToonTails
         </Link>
         <div className="flex items-center gap-3">
           {!hideCta && (
-            <Link
-              href="/create"
-              className="text-sm font-semibold px-5 py-2.5 rounded-full"
-              style={{ background: "#1D1D1F", color: "#FFFFFF" }}
-            >
+            <Link href="/create" className="btn-pill-sm btn-ink">
               Create your dog&apos;s show
             </Link>
           )}

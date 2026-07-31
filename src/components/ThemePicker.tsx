@@ -5,14 +5,16 @@ export interface Theme {
   label: string;
   emoji: string;
   desc: string;
+  /** Decorative sky plate — see the THEME PICKER ART PLATES note in globals.css. */
+  plate: string;
 }
 
 export const ADVENTURE_THEMES: Theme[] = [
-  { id: "park", label: "Park", emoji: "🌳", desc: "Sunny park, butterflies, fetch" },
-  { id: "beach", label: "Beach", emoji: "🏖️", desc: "Waves, sand, palm trees" },
-  { id: "space", label: "Space", emoji: "🚀", desc: "Stars, planets, tiny helmet" },
-  { id: "mountain", label: "Mountain", emoji: "🏔️", desc: "Trails, views, fresh air" },
-  { id: "city", label: "City", emoji: "🏙️", desc: "Sidewalks, lights, adventure" },
+  { id: "park", label: "Park", emoji: "🌳", desc: "Sunny grass, butterflies, fetch", plate: "plate-park" },
+  { id: "beach", label: "Beach", emoji: "🏖️", desc: "Waves, warm sand, palm trees", plate: "plate-beach" },
+  { id: "space", label: "Space", emoji: "🚀", desc: "Stars, planets, a tiny helmet", plate: "plate-space" },
+  { id: "mountain", label: "Mountain", emoji: "🏔️", desc: "Trails, big views, fresh air", plate: "plate-mountain" },
+  { id: "city", label: "City", emoji: "🏙️", desc: "Sidewalks, lights, a big night out", plate: "plate-city" },
 ];
 
 interface ThemePickerProps {
@@ -25,7 +27,7 @@ interface ThemePickerProps {
 export default function ThemePicker({ selected, onSelect, labelledBy }: ThemePickerProps) {
   return (
     <div
-      className="grid grid-cols-2 sm:grid-cols-3 gap-3"
+      className="grid grid-cols-2 sm:grid-cols-3 gap-4"
       role="radiogroup"
       aria-labelledby={labelledBy}
       aria-label={labelledBy ? undefined : "Adventure theme"}
@@ -39,12 +41,21 @@ export default function ThemePicker({ selected, onSelect, labelledBy }: ThemePic
             role="radio"
             aria-checked={isSelected}
             onClick={() => onSelect(theme.id)}
-            className={`pick-card rounded-2xl p-4 ${isSelected ? "selected" : ""}`}
+            className={`pick-card pick-card-img ${isSelected ? "selected" : ""}`}
           >
-            <div className="text-3xl mb-2">{theme.emoji}</div>
-            <div className="font-semibold" style={{ fontSize: "16px" }}>{theme.label}</div>
-            <div className="text-xs mt-1" style={{ color: isSelected ? "#D4D4D4" : "#6E6E73" }}>
-              {theme.desc}
+            <div className={`pick-art-plate ${theme.plate}`} aria-hidden="true">
+              <span>{theme.emoji}</span>
+            </div>
+            <div className="pick-body">
+              <div className="font-semibold" style={{ fontSize: "17px" }}>
+                {theme.label}
+              </div>
+              <div
+                className="text-xs mt-1 leading-snug"
+                style={{ color: isSelected ? "#D6CCC0" : "#6B625B" }}
+              >
+                {theme.desc}
+              </div>
             </div>
           </button>
         );

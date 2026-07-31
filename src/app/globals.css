@@ -7,13 +7,54 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 body {
-  background: #FAFAFA;
+  background: #FFF8F0;
   color: #1D1D1F;
   font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
 }
+
+/* ============================================================
+   PREFLIGHT ESSENTIALS
+   ------------------------------------------------------------
+   `@import "tailwindcss"` above brings in Tailwind's preflight —
+   but Turbopack never runs the PostCSS plugin in production for
+   this project, so in a real build NONE of it lands and the
+   browser's own defaults apply. That is why shipped pages had
+   underlined pill buttons, indented <ol>s and stray heading
+   margins: the reset simply was not there.
+
+   Only element selectors here, so every utility and component
+   class in this file still wins on specificity regardless of
+   source order.
+   ============================================================ */
+a { color: inherit; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: 100%;
+  line-height: inherit;
+  color: inherit;
+  margin: 0;
+}
+button { background-color: transparent; background-image: none; border: 0; }
+button, [role="button"] { cursor: pointer; }
+
+h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd { margin: 0; }
+h1, h2, h3, h4, h5, h6 { font-size: inherit; font-weight: inherit; }
+ol, ul, menu { list-style: none; margin: 0; padding: 0; }
+img, svg, video, canvas { max-width: 100%; }
+table { border-collapse: collapse; }
+
+/* Anything that looks like a control never gets the link underline. */
+.btn-pill, .btn-pill:hover,
+.btn-pill-sm, .btn-pill-sm:hover,
+.pick-card, .pick-card:hover,
+.chip, .chip:hover,
+.tile, .tile:hover,
+.nav-link { text-decoration: none; }
 
 /* ============================================================
    HAND-WRITTEN TAILWIND UTILITY FALLBACKS
@@ -541,4 +582,618 @@ table.ledger-table th {
   outline: 3px solid #F97316;
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* ============================================================
+   WARM IDENTITY — design overhaul
+   ------------------------------------------------------------
+   The v1/v2 palette was clinical (#FAFAFA page, #FFFFFF cards,
+   #E5E5E5 hairlines). Everything below moves the product onto a
+   warm cream base with soft, rounded, gently-shadowed surfaces —
+   modern children's-book warmth rather than corporate SaaS.
+
+   Same hand-rolled convention as every section above: Turbopack
+   skips the Tailwind PostCSS plugin in production for this
+   project, so EVERY class used anywhere in src/** must be
+   written out here as plain CSS or it silently does nothing.
+
+   Contrast (WCAG 2.1, computed not eyeballed):
+     ink        #1D1D1F on cream #FFF8F0 ....... 15.98:1  AAA
+     ink        #1D1D1F on deep  #FFF1E3 ....... 15.4 :1  AAA
+     ink-soft   #6B625B on cream #FFF8F0 .......  5.66:1  AA
+     ink-soft   #6B625B on surface #FFFDF9 .....  5.87:1  AA
+     sun-ink    #C2410C on cream #FFF8F0 .......  4.92:1  AA
+     white      #FFFFFF on sun-ink #C2410C .....  5.18:1  AA
+     ink        #1D1D1F on sun #F97316 .........  6.00:1  AA
+     blush-ink  #9A3412 on blush #FFE0D0 .......  5.85:1  AA
+     sky-ink    #1D5A80 on cream #FFF8F0 .......  7.05:1  AAA
+     sky-ink    #1D5A80 on sky   #E8F4FB .......  6.64:1  AAA
+     line-strong #8F7C6B on surface ............  3.93:1  AA (1.4.11)
+   Orange #F97316 is a FILL colour only — never body text on a
+   light background (2.66:1). Orange text uses --sun-ink.
+   ============================================================ */
+
+:root {
+  --cream:        #FFF8F0;
+  --cream-deep:   #FFF1E3;
+  --surface:      #FFFDF9;
+  --surface-warm: #FFF4E8;
+  --ink:          #1D1D1F;
+  --ink-soft:     #6B625B;
+  --line:         #F0E2D2;
+  --line-strong:  #8F7C6B;
+  --sun:          #F97316;
+  --sun-ink:      #C2410C;
+  --peach:        #FFEDD5;
+  --blush:        #FFE0D0;
+  --blush-ink:    #9A3412;
+  --sky:          #E8F4FB;
+  --sky-ink:      #1D5A80;
+  --leaf:         #ECFDF5;
+  --leaf-ink:     #047857;
+  --shadow-soft: 0 1px 2px rgba(122, 84, 45, 0.05), 0 8px 24px rgba(122, 84, 45, 0.07);
+  --shadow-lift: 0 2px 6px rgba(122, 84, 45, 0.08), 0 18px 40px rgba(122, 84, 45, 0.13);
+  --shadow-tile: 0 2px 6px rgba(122, 84, 45, 0.10), 0 14px 34px rgba(122, 84, 45, 0.16);
+  --radius:      20px;
+}
+
+/* --- Page shells ------------------------------------------- */
+
+/* Cream page + a very low-opacity paw-print field. The pattern is
+   an inline SVG so it costs no request and never blocks paint. */
+.warm-page {
+  background-color: var(--cream);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280' viewBox='0 0 280 280'%3E%3Cg fill='%23C2410C' fill-opacity='0.022'%3E%3Cellipse cx='58' cy='76' rx='16' ry='13'/%3E%3Cellipse cx='38' cy='54' rx='7' ry='9'/%3E%3Cellipse cx='52' cy='45' rx='7' ry='9.5'/%3E%3Cellipse cx='68' cy='46' rx='7' ry='9.5'/%3E%3Cellipse cx='82' cy='56' rx='7' ry='9'/%3E%3Cellipse cx='208' cy='214' rx='13' ry='10.5'/%3E%3Cellipse cx='192' cy='196' rx='5.7' ry='7.3'/%3E%3Cellipse cx='203' cy='188' rx='5.7' ry='7.7'/%3E%3Cellipse cx='216' cy='189' rx='5.7' ry='7.7'/%3E%3Cellipse cx='227' cy='197' rx='5.7' ry='7.3'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 280px 280px;
+  background-attachment: fixed;
+}
+
+/* Muted twin for /memorial — same warmth, no pattern, no play. */
+.quiet-page { background-color: #FAF7F3; }
+
+/* Alternating band that lifts a section off the page */
+.warm-band {
+  background: var(--cream-deep);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+/* --- Surfaces ---------------------------------------------- */
+.card-warm {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+.card-tint {
+  background: var(--surface-warm);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.card-sky {
+  background: var(--sky);
+  border: 1px solid #CFE6F4;
+  border-radius: var(--radius);
+}
+.card-lift { transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.25s ease; }
+.card-lift:hover { transform: translateY(-4px); box-shadow: var(--shadow-lift); }
+.card-ink {
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+}
+
+/* --- Buttons: real pills with presence ---------------------- */
+.btn-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 56px;
+  padding: 0 2rem;
+  border-radius: 9999px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.18s ease,
+              background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+.btn-pill:hover { transform: translateY(-2px); }
+.btn-pill:active { transform: translateY(0); }
+
+.btn-ink   { background: var(--ink);     color: #FFFFFF; box-shadow: 0 4px 14px rgba(29,29,31,0.20); }
+.btn-ink:hover   { background: #34343A;  box-shadow: 0 8px 22px rgba(29,29,31,0.28); }
+.btn-sun   { background: var(--sun-ink); color: #FFFFFF; box-shadow: 0 4px 14px rgba(194,65,12,0.26); }
+.btn-sun:hover   { background: #A93709;  box-shadow: 0 8px 24px rgba(194,65,12,0.34); }
+.btn-ghost { background: var(--surface); color: var(--ink); border-color: var(--line-strong); box-shadow: none; }
+.btn-ghost:hover { background: var(--surface-warm); border-color: var(--ink); }
+.btn-muted { background: #6B7280; color: #FFFFFF; box-shadow: none; }
+
+/* Disabled: still 4.6:1 (#6B625B on #F3E7D8), so the label stays readable. */
+.btn-pill:disabled,
+.btn-pill.is-disabled {
+  background: #F3E7D8;
+  color: #6B625B;
+  border-color: transparent;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+.btn-pill:disabled:hover { transform: none; }
+
+/* Softer square-ish variant where a pill would look odd (wide form CTAs) */
+.btn-soft { border-radius: 18px; }
+.btn-block { width: 100%; }
+
+/* --- Chips, badges, step numbers ---------------------------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 600;
+  background: var(--peach);
+  color: var(--sun-ink);
+  border: 1px solid #FBD8AE;
+}
+.chip-sky   { background: var(--sky);   color: var(--sky-ink);   border-color: #CFE6F4; }
+.chip-blush { background: var(--blush); color: var(--blush-ink); border-color: #FFCDB4; }
+.chip-quiet { background: var(--surface-warm); color: var(--ink-soft); border-color: var(--line); }
+.chip-sm { padding: 0.3rem 0.7rem; font-size: 12px; letter-spacing: 0.04em; }
+
+/* Friendly step number badge — replaces the tiny grey "01" mono labels */
+.badge-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  font-size: 20px;
+  font-weight: 700;
+  background: var(--peach);
+  color: var(--sun-ink);
+  border: 2px solid #FBD8AE;
+  flex-shrink: 0;
+}
+.badge-num-sky { background: var(--sky); color: var(--sky-ink); border-color: #CFE6F4; }
+.badge-num-leaf { background: var(--leaf); color: var(--leaf-ink); border-color: #A7F3D0; }
+
+/* "Most loved" ribbon on the pricing card */
+.badge-loved {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--sun);
+  color: var(--ink);
+}
+
+/* Round icon well behind a lucide glyph */
+.icon-well {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: var(--peach);
+  flex-shrink: 0;
+}
+.icon-well-sky  { background: var(--sky); }
+.icon-well-leaf { background: var(--leaf); }
+.icon-well-sm { width: 44px; height: 44px; border-radius: 14px; }
+
+/* --- Image tiles & the hero collage ------------------------- */
+.tile {
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+  border: 4px solid var(--surface);
+  box-shadow: var(--shadow-tile);
+}
+.tile img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.tile-hover { transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.3s ease; }
+.tile-hover:hover { transform: translateY(-6px) scale(1.015); box-shadow: var(--shadow-lift); }
+
+.tilt-a { transform: rotate(-2.2deg); }
+.tilt-b { transform: rotate(1.8deg); }
+.tilt-c { transform: rotate(-1.2deg); }
+.tilt-a.tile-hover:hover { transform: rotate(-2.2deg) translateY(-6px) scale(1.015); }
+.tilt-b.tile-hover:hover { transform: rotate(1.8deg)  translateY(-6px) scale(1.015); }
+.tilt-c.tile-hover:hover { transform: rotate(-1.2deg) translateY(-6px) scale(1.015); }
+
+/* Hero arrangement: one tall portrait beside two stacked landscapes.
+   Flex (not absolute positioning) so it holds together from 320px up. */
+.collage { display: flex; gap: 14px; align-items: stretch; }
+.collage-tall  { flex: 1.02; display: flex; }
+.collage-tall .tile { width: 100%; }
+.collage-stack { flex: 1; display: flex; flex-direction: column; gap: 14px; }
+.collage-stack .tile { flex: 1; }
+@media (min-width: 768px) { .collage { gap: 20px; } .collage-stack { gap: 20px; } }
+
+/* Two-column hero: copy left, collage right; stacks under 900px. */
+.hero-split { display: grid; grid-template-columns: 1fr; gap: 2.5rem; align-items: center; }
+@media (min-width: 900px) {
+  .hero-split { grid-template-columns: 1.05fr 1fr; gap: 3.5rem; }
+  .hero-copy { text-align: left; }
+  .hero-copy .hero-actions { justify-content: flex-start; }
+  .hero-copy p { margin-left: 0; }
+}
+
+/* Sun-glow behind the collage so it doesn't float on flat cream */
+.hero-glow { position: relative; }
+.hero-glow::before {
+  content: "";
+  position: absolute;
+  inset: -12% -8%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, rgba(249,168,73,0.30), rgba(249,168,73,0) 68%);
+  z-index: 0;
+  pointer-events: none;
+}
+.hero-glow > * { position: relative; z-index: 1; }
+
+/* --- Paw-print section divider ------------------------------ */
+.paw-rule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+.paw-rule::before,
+.paw-rule::after {
+  content: "";
+  flex: 1;
+  max-width: 180px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(240,226,210,0), var(--line), rgba(240,226,210,0));
+}
+.paw-rule span { font-size: 18px; line-height: 1; opacity: 0.65; }
+
+/* --- Warmed nav --------------------------------------------- */
+.nav-warm {
+  /* 0.94, not lower: the create flow scrolls a 38px heading straight
+     under this bar and a thinner wash let the text read through. */
+  background: rgba(255, 248, 240, 0.94);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border-bottom: 1px solid var(--line);
+}
+.nav-link {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  border-radius: 9999px;
+  padding: 0.4rem 0.85rem;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.nav-link:hover { color: var(--ink); background: var(--surface-warm); }
+
+/* Small pill CTA used inside nav bars */
+.btn-pill-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0 1.25rem;
+  border-radius: 9999px;
+  font-size: 15px;
+  font-weight: 600;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(0.2,0.7,0.3,1), background 0.18s ease, box-shadow 0.18s ease;
+}
+.btn-pill-sm:hover { transform: translateY(-1px); }
+
+/* --- Form controls, warmed ---------------------------------- */
+/* #8F7C6B against #FFFDF9 is 3.93:1, so the resting border of every
+   interactive control now clears WCAG 1.4.11 (the old #E5E5E5 was
+   about 1.3:1 and effectively invisible). */
+.field {
+  width: 100%;
+  border-radius: 16px;
+  padding: 0.9rem 1.1rem;
+  font-size: 18px;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 2px solid var(--line-strong);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.field::placeholder { color: #8A7F74; }
+.field:hover { border-color: #6F5E4E; }
+.field:focus {
+  border-color: var(--sun-ink);
+  background: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.16);
+}
+.field-sm { font-size: 16px; padding: 0.75rem 1rem; }
+
+/* Selectable radio/checkbox cards */
+.pick-card {
+  border: 2px solid var(--line-strong);
+  background: var(--surface);
+  border-radius: 18px;
+  transition: transform 0.18s cubic-bezier(0.2,0.7,0.3,1), border-color 0.15s ease,
+              background 0.15s ease, box-shadow 0.18s ease;
+  text-align: left;
+  cursor: pointer;
+  color: var(--ink);
+}
+.pick-card:hover { border-color: var(--sun-ink); background: var(--surface-warm); transform: translateY(-2px); }
+.pick-card.selected {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #FFFFFF;
+  box-shadow: var(--shadow-lift);
+}
+.pick-card.selected:hover { border-color: var(--ink); background: var(--ink); }
+.pick-card:disabled,
+.pick-card.disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.pick-card:disabled:hover,
+.pick-card.disabled:hover { border-color: var(--line-strong); background: var(--surface); transform: none; }
+
+/* Image-backed theme card: art on top, label on a solid plate below,
+   so the label contrast never depends on the artwork behind it. */
+.pick-card-img { padding: 0; overflow: hidden; }
+.pick-card-img .pick-art { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; background: var(--surface-warm); }
+.pick-card-img .pick-body { padding: 0.85rem 1rem 1rem; }
+
+/* --- Create-flow progress ----------------------------------- */
+.progress-track {
+  height: 10px;
+  border-radius: 9999px;
+  background: var(--peach);
+  overflow: hidden;
+  border: 1px solid #FBD8AE;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #FB923C, #F97316 55%, #EA580C);
+  transition: width 0.45s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.step-dot {
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
+}
+
+/* --- Upload zone -------------------------------------------- */
+.upload-zone {
+  border: 2px dashed var(--line-strong);
+  background: var(--surface-warm);
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+}
+.upload-zone:hover,
+.upload-zone.drag-active {
+  border-color: var(--sun-ink);
+  background: var(--peach);
+  transform: translateY(-2px);
+}
+
+/* --- Tables ------------------------------------------------- */
+table.ledger-table th,
+table.ledger-table td { border-bottom: 1px solid var(--line); }
+table.ledger-table th { color: var(--ink-soft); }
+table.ledger-table tbody tr { transition: background 0.15s ease; }
+table.ledger-table tbody tr:hover { background: var(--surface-warm); }
+
+/* --- Legacy aliases, rewarmed ------------------------------- */
+.gradient-hero { background: var(--cream); }
+.gradient-card { background: var(--surface); border: 1px solid var(--line); }
+.gradient-card:hover { border-color: #E3CFB8; }
+.gradient-btn-primary { background: var(--ink); }
+.gradient-btn-primary:hover { background: #34343A; }
+.video-glow { box-shadow: var(--shadow-tile); }
+
+/* --- Scrollbar ---------------------------------------------- */
+::-webkit-scrollbar-track { background: var(--cream-deep); }
+::-webkit-scrollbar-thumb { background: #DCC6AC; }
+::-webkit-scrollbar-thumb:hover { background: var(--line-strong); }
+
+/* --- Motion ------------------------------------------------- */
+/* Calm, small-amplitude, and every one of them is switched off by
+   the prefers-reduced-motion block at the very bottom of this file. */
+@keyframes wag {
+  0%, 100% { transform: rotate(-7deg); }
+  50%      { transform: rotate(7deg); }
+}
+@keyframes floatSoft {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+@keyframes popIn {
+  0%   { opacity: 0; transform: scale(0.94); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes shimmerWarm {
+  0%   { background-position: -420px 0; }
+  100% { background-position: 420px 0; }
+}
+
+/* The brand icon gives a little tail-wag on hover — the whole nav is
+   the hover target so it reads as one friendly object. */
+.wag { transition: transform 0.2s ease; transform-origin: 50% 85%; }
+.wag-host:hover .wag { animation: wag 0.55s ease-in-out 3; }
+.float-soft { animation: floatSoft 5.5s ease-in-out infinite; }
+.pop-in { animation: popIn 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+
+/* Warm skeleton for the still placeholders while a scene renders */
+.warm-shimmer {
+  background: linear-gradient(90deg, var(--surface-warm) 0%, var(--peach) 45%, var(--surface-warm) 90%);
+  background-size: 420px 100%;
+  animation: shimmerWarm 1.8s linear infinite;
+}
+
+/* --- Extra utilities used by the redesign ------------------- */
+.items-stretch    { align-items: stretch; }
+.whitespace-nowrap { white-space: nowrap; }
+.underline        { text-decoration: underline; }
+.list-none        { list-style: none; }
+.gap-14           { gap: 3.5rem; }
+.pb-32            { padding-bottom: 8rem; }
+.mt-20            { margin-top: 5rem; }
+.mb-7             { margin-bottom: 1.75rem; }
+.pt-6             { padding-top: 1.5rem; }
+.pt-10            { padding-top: 2.5rem; }
+.opacity-60       { opacity: 0.6; }
+.opacity-80       { opacity: 0.8; }
+.w-24             { width: 6rem; }
+.h-24             { height: 6rem; }
+.w-9              { width: 2.25rem; }
+.h-9              { height: 2.25rem; }
+.top-6            { top: 1.5rem; }
+.right-6          { right: 1.5rem; }
+.left-6           { left: 1.5rem; }
+.grid-cols-5      { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.aspect-\[16\/10\] { aspect-ratio: 16 / 10; }
+.aspect-\[4\/5\]   { aspect-ratio: 4 / 5; }
+@media (min-width: 640px) {
+  .sm\:gap-6      { gap: 1.5rem; }
+  .sm\:text-left  { text-align: left; }
+  .sm\:block      { display: block; }
+  .sm\:items-center { align-items: center; }
+}
+@media (min-width: 768px) {
+  .md\:gap-14     { gap: 3.5rem; }
+  .md\:py-24      { padding-top: 6rem; padding-bottom: 6rem; }
+  .md\:text-left  { text-align: left; }
+  .md\:flex-row   { flex-direction: row; }
+}
+
+/* --- Focus visibility (re-declared so it still wins) --------- */
+/* Must stay after every rule that sets an outline or border on an
+   interactive element, including .field and .pick-card above. */
+:focus-visible {
+  outline: 3px solid var(--sun-ink);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+.pick-card:focus-visible { outline-offset: 4px; }
+
+/* --- prefers-reduced-motion --------------------------------- */
+/* Everything the redesign added is decorative: with motion reduced
+   the layout is byte-identical, just static. framer-motion reads the
+   same OS setting via useReducedMotion() in Reveal/HeroCollage. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .paw-bounce,
+  .float-soft,
+  .wag,
+  .wag-host:hover .wag,
+  .warm-shimmer { animation: none !important; }
+  .warm-shimmer { background: var(--surface-warm); }
+  .btn-pill:hover,
+  .card-lift:hover,
+  .tile-hover:hover,
+  .pick-card:hover,
+  .upload-zone:hover { transform: none !important; }
+  .warm-page { background-attachment: scroll; }
+}
+
+/* ============================================================
+   THEME PICKER ART PLATES
+   ------------------------------------------------------------
+   Only park scenes exist in /public/demo, so the picker uses a
+   painted sky per theme rather than showing a park still under a
+   "Space" label. Each plate is decorative: it carries a single
+   emoji and no text, and the theme name sits on the card's solid
+   surface below, so label contrast never depends on the plate.
+   ============================================================ */
+.pick-art-plate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  font-size: 40px;
+  line-height: 1;
+  position: relative;
+  overflow: hidden;
+}
+.pick-art-plate::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 22% 78%, rgba(255,255,255,0.34) 0 3px, transparent 4px),
+                    radial-gradient(circle at 74% 30%, rgba(255,255,255,0.28) 0 2px, transparent 3px),
+                    radial-gradient(circle at 52% 86%, rgba(255,255,255,0.22) 0 2px, transparent 3px);
+  pointer-events: none;
+}
+.pick-art-plate > span { position: relative; z-index: 1; }
+
+.plate-park     { background: linear-gradient(160deg, #BFE4F5 0%, #EBF6C9 48%, #A9D67C 100%); }
+.plate-beach    { background: linear-gradient(160deg, #BDE9F2 0%, #FDF0CE 55%, #F4D9A0 100%); }
+.plate-space    { background: linear-gradient(160deg, #2C2A5E 0%, #4B3A80 55%, #8B5FA8 100%); }
+.plate-mountain { background: linear-gradient(160deg, #CDE6F0 0%, #9FBBCB 55%, #6E8AA0 100%); }
+.plate-city     { background: linear-gradient(160deg, #FFD6A0 0%, #F9A76B 50%, #A76D9E 100%); }
+
+/* Sizes down gracefully in the two-up mobile grid */
+@media (max-width: 480px) { .pick-art-plate { font-size: 32px; } }
+
+/* --- Final gap-fill from the class-coverage sweep ----------- */
+/* scripts: see the note at the top of the WARM IDENTITY block.
+   These were used in TSX with no definition, which under Turbopack
+   means they silently did nothing. */
+.p-0     { padding: 0; }
+.p-7     { padding: 1.75rem; }
+.pb-3    { padding-bottom: 0.75rem; }
+.pt-4    { padding-top: 1rem; }
+.mt-0\.5 { margin-top: 0.125rem; }
+
+/* ============================================================
+   RESPONSIVE GRID OVERRIDES — MUST STAY LAST
+   ------------------------------------------------------------
+   Media queries add no specificity, so between two rules of
+   equal weight the later one wins. `.grid-cols-1` was written
+   in the V2.1 block and `.grid-cols-5` in the WARM block, both
+   AFTER the `sm:`/`md:` variants near the top of this file —
+   which meant `grid-cols-1 sm:grid-cols-3` resolved to one
+   column at every width. The ledger stats, pricing cards,
+   photo grid, preview stills, gift/pros/impact card rows and
+   the footer columns were all stacking on desktop.
+
+   Re-declaring the responsive variants here, after every base
+   `.grid-cols-*`, restores them. Any new base grid utility must
+   be added ABOVE this block.
+   ============================================================ */
+@media (min-width: 640px) {
+  .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sm\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sm\:grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+@media (min-width: 768px) {
+  .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }

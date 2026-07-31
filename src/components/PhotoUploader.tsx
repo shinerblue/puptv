@@ -107,19 +107,18 @@ export default function PhotoUploader({
           onChange={(e) => e.target.files && addFiles(e.target.files)}
         />
         <div
-          className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-          style={{ background: "#F5F5F5" }}
+          className="icon-well mx-auto mb-4"
         >
           {isCompressing ? (
-            <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#6E6E73" }} />
+            <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#C2410C" }} />
           ) : (
-            <Upload className="w-6 h-6" style={{ color: "#6E6E73" }} />
+            <Upload className="w-6 h-6" style={{ color: "#C2410C" }} />
           )}
         </div>
         <p className="font-semibold mb-1" style={{ fontSize: "18px", color: "#1D1D1F" }}>
           {isCompressing ? "Preparing your photos…" : "Tap to add photos, or drop them here"}
         </p>
-        <p className="text-sm" style={{ color: "#6E6E73" }}>
+        <p className="text-sm" style={{ color: "#6B625B" }}>
           1 to {maxPhotos} photos of your dog · JPG or PNG
         </p>
       </div>
@@ -128,7 +127,7 @@ export default function PhotoUploader({
         <div
           role="alert"
           className="flex items-center gap-2 text-sm rounded-xl px-4 py-3 border"
-          style={{ background: "#FEF2F2", color: "#B91C1C", borderColor: "#FECACA" }}
+          style={{ background: "#FEF2F2", color: "#B91C1C", borderColor: "#F3B9B9" }}
         >
           <span aria-hidden="true">⚠</span>
           {error}
@@ -140,8 +139,7 @@ export default function PhotoUploader({
           {photos.map((photo, i) => (
             <div
               key={i}
-              className="relative group aspect-square rounded-xl overflow-hidden border"
-              style={{ borderColor: "#E5E5E5" }}
+              className="relative group aspect-square tile"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={photo.previewUrl} alt={`Your dog, photo ${i + 1}`} className="w-full h-full object-cover" />
@@ -150,7 +148,7 @@ export default function PhotoUploader({
                 onClick={(e) => { e.stopPropagation(); removePhoto(i); }}
                 aria-label={`Remove photo ${i + 1}`}
                 className="absolute top-1.5 right-1.5 w-8 h-8 rounded-full flex items-center justify-center"
-                style={{ background: "rgba(0,0,0,0.6)" }}
+                style={{ background: "rgba(45,28,12,0.72)" }}
               >
                 <X className="w-4 h-4 text-white" />
               </button>
@@ -172,8 +170,8 @@ export default function PhotoUploader({
                 }
               }}
             >
-              <Upload className="w-5 h-5" style={{ color: "#6E6E73" }} />
-              <span className="text-xs" style={{ color: "#6E6E73" }}>Add more</span>
+              <Upload className="w-5 h-5" style={{ color: "#C2410C" }} />
+              <span className="text-xs" style={{ color: "#6B625B" }}>Add more</span>
             </div>
           )}
         </div>

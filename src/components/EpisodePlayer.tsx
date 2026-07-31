@@ -80,11 +80,8 @@ export default function EpisodePlayer({ clips, petName }: EpisodePlayerProps) {
             download={`${slug}-scene-${i + 1}.mp4`}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-2xl border-2 flex items-center justify-center gap-2 flex-1 py-3"
+            className="btn-pill btn-soft btn-ghost flex-1"
             style={{
-              borderColor: "#E5E5E5",
-              color: "#1D1D1F",
-              background: "#FFFFFF",
               fontSize: "14px",
               fontWeight: 600,
               textDecoration: "none",

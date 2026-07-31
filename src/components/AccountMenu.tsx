@@ -21,11 +21,7 @@ export default function AccountMenu() {
 
   if (!user) {
     return (
-      <Link
-        href="/account"
-        className="text-sm font-semibold px-4 py-2 rounded-full border transition-colors"
-        style={{ borderColor: "#E5E5E5", color: "#1D1D1F" }}
-      >
+      <Link href="/account" className="btn-pill-sm btn-ghost">
         Sign in
       </Link>
     );
@@ -39,7 +35,7 @@ export default function AccountMenu() {
         aria-haspopup="menu"
         aria-expanded={menuOpen}
         className="inline-flex items-center gap-2 rounded-full px-3 py-2"
-        style={{ background: "#F5F5F5" }}
+        style={{ background: "#FFF1E0" }}
       >
         {user.image ? (
           // eslint-disable-next-line @next/next/no-img-element -- external Google avatar, not an app asset
@@ -55,7 +51,7 @@ export default function AccountMenu() {
         <span className="text-sm font-semibold" style={{ color: "#1D1D1F" }}>
           {firstNameOf(user)}
         </span>
-        <ChevronDown className="w-4 h-4" style={{ color: "#6E6E73" }} />
+        <ChevronDown className="w-4 h-4" style={{ color: "#6B625B" }} />
       </button>
 
       {menuOpen && (
@@ -71,7 +67,7 @@ export default function AccountMenu() {
           <div
             role="menu"
             className="absolute right-0 mt-2 rounded-xl border overflow-hidden"
-            style={{ background: "#FFFFFF", borderColor: "#E5E5E5", minWidth: "180px", zIndex: 50 }}
+            style={{ background: "#FFFDF9", borderColor: "#F0E2D2", minWidth: "180px", zIndex: 50 }}
           >
             <Link
               href="/account"
@@ -87,7 +83,7 @@ export default function AccountMenu() {
                 type="submit"
                 role="menuitem"
                 className="w-full flex items-center gap-2 px-4 py-3 text-sm text-left border-t"
-                style={{ color: "#B91C1C", borderColor: "#E5E5E5" }}
+                style={{ color: "#B91C1C", borderColor: "#F0E2D2" }}
               >
                 <LogOut className="w-4 h-4" />
                 Sign out

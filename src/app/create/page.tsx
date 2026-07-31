@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowLeft, Loader2, Tv, Check, Copy, Send, Moon } from "lucide-react";
+import { ArrowLeft, Loader2, Tv, Check, Copy, Send, Moon, PawPrint, Sparkles, Heart } from "lucide-react";
 import PhotoUploader, { CompressedPhoto } from "@/components/PhotoUploader";
 import EpisodePlayer from "@/components/EpisodePlayer";
 import {
@@ -426,21 +426,20 @@ export default function CreatePage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: "#FAFAFA" }}>
-      <nav
-        className="sticky top-0 z-50 border-b"
-        style={{
-          background: "rgba(255,255,255,0.92)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          borderColor: "#E5E5E5",
-        }}
-      >
+    <div className="min-h-screen warm-page">
+      <nav className="sticky top-0 z-50 nav-warm">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2" style={{ color: "#6E6E73" }}>
+          <Link href="/" className="flex items-center gap-2 wag-host" style={{ color: "#6B625B" }}>
             <ArrowLeft className="w-4 h-4" />
             {/* eslint-disable-next-line @next/next/no-img-element -- small static brand asset */}
-            <img src="/brand/toontails-icon.png" alt="" width={22} height={22} style={{ borderRadius: 6 }} />
+            <img
+              src="/brand/toontails-icon.png"
+              alt=""
+              width={26}
+              height={26}
+              className="wag"
+              style={{ borderRadius: 8 }}
+            />
             <span className="font-bold text-lg" style={{ color: "#1D1D1F" }}>ToonTails</span>
           </Link>
 
@@ -455,30 +454,46 @@ export default function CreatePage() {
                     <div
                       className="step-dot"
                       style={{
-                        background: isComplete ? "#10B981" : isActive ? "#1D1D1F" : "#E5E5E5",
-                        color: isComplete || isActive ? "#FFFFFF" : "#52525B",
+                        background: isComplete ? "#047857" : isActive ? "#C2410C" : "#F3E7D8",
+                        color: isComplete || isActive ? "#FFFFFF" : "#6B625B",
+                        transform: isActive ? "scale(1.08)" : "none",
                       }}
                     >
                       {isComplete ? <Check className="w-4 h-4" /> : idx}
                     </div>
                     <span
                       className="text-sm hidden md:inline"
-                      style={{ color: isActive ? "#1D1D1F" : "#6E6E73", fontWeight: isActive ? 600 : 400 }}
+                      style={{ color: isActive ? "#1D1D1F" : "#6B625B", fontWeight: isActive ? 700 : 400 }}
                     >
                       {label}
                     </span>
                   </div>
                   {i < STEP_LABELS.length - 1 && (
-                    <div className="w-4 h-px" style={{ background: idx < step ? "#10B981" : "#E5E5E5" }} />
+                    <div className="w-4 h-px" style={{ background: idx < step ? "#047857" : "#E4D2BE" }} />
                   )}
                 </div>
               );
             })}
           </div>
 
-          <span className="sm:hidden text-sm font-medium" style={{ color: "#6E6E73" }}>
+          <span className="sm:hidden text-sm font-semibold" style={{ color: "#C2410C" }}>
             Step {step} of 5
           </span>
+        </div>
+
+        {/* Warm progress rail under the tracker — on narrow screens this is
+            the only thing showing how far along the flow you are. */}
+        <div className="max-w-3xl mx-auto px-6 pb-3">
+          <div
+            className="progress-track"
+            role="progressbar"
+            aria-valuemin={1}
+            aria-valuemax={5}
+            aria-valuenow={step}
+            aria-label={`Step ${step} of 5: ${STEP_LABELS[step - 1]}`}
+          >
+            <div className="progress-fill" style={{ width: `${(step / 5) * 100}%` }} />
+          </div>
         </div>
       </nav>
 
@@ -486,15 +501,19 @@ export default function CreatePage() {
 
         {step === 1 && (
           <div className="max-w-xl mx-auto">
+            <span className="chip mb-5">
+              <PawPrint className="w-4 h-4" />
+              Step one of five — the fun one
+            </span>
             <h1
-              className="font-bold mb-3"
+              className="font-bold mb-3 mt-2"
               style={{ fontSize: "clamp(28px,5vw,38px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
             >
-              Add photos of your dog
+              Let&apos;s meet your dog
             </h1>
-            <p className="mb-8" style={{ fontSize: "17px", color: "#6E6E73", lineHeight: 1.6 }}>
-              1 to 5 photos, any angle. Clear, well-lit shots work best — they&apos;re how the AI
-              keeps your dog looking like your dog.
+            <p className="mb-8" style={{ fontSize: "18px", color: "#6B625B", lineHeight: 1.6 }}>
+              One to five photos, any angle. Clear, well-lit shots work best — they&apos;re how we
+              keep your dog looking like <em>your</em> dog and not some other dog entirely.
             </p>
 
             <PhotoUploader onPhotosSelected={handlePhotosSelected} />
@@ -502,27 +521,52 @@ export default function CreatePage() {
             {photos.length > 0 && (
               <button
                 onClick={() => setStep(2)}
-                className="btn-large mt-8 w-full rounded-2xl flex items-center justify-center gap-2"
-                style={{ background: "#1D1D1F", color: "#FFFFFF" }}
+                className="btn-pill btn-soft btn-block btn-ink mt-8"
               >
-                Next: Tell us about your dog <span>→</span>
+                Great — now tell us about them <span aria-hidden="true">→</span>
               </button>
             )}
 
-            <div className="mt-8 rounded-2xl p-6 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
-              <h3 className="font-semibold mb-4" style={{ color: "#1D1D1F" }}>
-                Tips for the best result
+            <div className="card-warm p-6 mt-8">
+              <h3 className="font-semibold mb-4" style={{ color: "#1D1D1F", fontSize: "17px" }}>
+                What makes a good photo
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
-                  { ok: true, text: "Clear, well-lit photos" },
+                  { ok: true, text: "Clear and well lit" },
                   { ok: true, text: "A few different angles" },
-                  { ok: true, text: "Show any unique markings" },
-                  { ok: false, text: "Blurry or very dark photos" },
+                  { ok: true, text: "Any unique markings visible" },
+                  { ok: false, text: "Blurry or very dark shots" },
                 ].map((tip, i) => (
                   <div key={i} className="flex items-start gap-2 text-sm">
-                    <span style={{ color: tip.ok ? "#10B981" : "#EF4444" }}>{tip.ok ? "✓" : "✕"}</span>
-                    <span style={{ color: "#6E6E73" }}>{tip.text}</span>
+                    <span
+                      className="font-bold"
+                      aria-hidden="true"
+                      style={{ color: tip.ok ? "#047857" : "#B91C1C" }}
+                    >
+                      {tip.ok ? "✓" : "✕"}
+                    </span>
+                    <span style={{ color: "#6B625B" }}>{tip.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Show the destination up front — this is where those photos end
+                up, and it is far more persuasive than another paragraph. */}
+            <div className="mt-8">
+              <p className="text-sm mb-4 text-center" style={{ color: "#6B625B" }}>
+                This is where they end up. Dutch, a real French Bulldog, in episode one:
+              </p>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { src: "/demo/still-1.jpg", alt: "Cartoon of Dutch bounding through a meadow after a butterfly", tilt: "tilt-a" },
+                  { src: "/demo/still-2.jpg", alt: "Cartoon of Dutch trotting through the park with a stick", tilt: "tilt-b" },
+                  { src: "/demo/still-3.jpg", alt: "Cartoon of Dutch asleep against a mossy tree root", tilt: "tilt-c" },
+                ].map((s) => (
+                  <div key={s.src} className={`tile tile-hover ${s.tilt}`}>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- static demo art */}
+                    <img src={s.src} alt={s.alt} loading="lazy" style={{ aspectRatio: "1 / 1" }} />
                   </div>
                 ))}
               </div>
@@ -532,14 +576,21 @@ export default function CreatePage() {
 
         {step === 2 && (
           <div className="max-w-xl mx-auto">
+            <span className="chip chip-sky mb-5">
+              <Sparkles className="w-4 h-4" />
+              Nice photos — this is the part that makes it them
+            </span>
             <h1
-              className="font-bold mb-3"
+              className="font-bold mb-3 mt-2"
               style={{ fontSize: "clamp(28px,5vw,38px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
             >
-              Tell us about your dog
+              Tell us about them
             </h1>
-            <p className="mb-8" style={{ fontSize: "17px", color: "#6E6E73", lineHeight: 1.6 }}>
-              A name, breed, and any details help the AI get {displayName} right.
+            <p className="mb-8" style={{ fontSize: "18px", color: "#6B625B", lineHeight: 1.6 }}>
+              {/* displayName falls back to the capitalised "Your dog", which
+                  reads wrong mid-sentence — so this line never interpolates it. */}
+              A name, a breed, and anything the drawing needs to get right. This is the step
+              that turns a generic cartoon dog into yours.
             </p>
 
             <div className="mb-6">
@@ -554,10 +605,7 @@ export default function CreatePage() {
                 value={petName}
                 onChange={(e) => setPetName(e.target.value)}
                 placeholder="Dutch, Luna, Max…"
-                className="w-full rounded-xl px-4 py-4 outline-none border-2"
-                style={{ fontSize: "18px", background: "#FFFFFF", borderColor: "#E5E5E5", color: "#1D1D1F" }}
-                onFocus={(e) => (e.target.style.borderColor = "#1D1D1F")}
-                onBlur={(e) => (e.target.style.borderColor = "#E5E5E5")}
+                className="field"
               />
             </div>
 
@@ -573,10 +621,7 @@ export default function CreatePage() {
                 value={breed}
                 onChange={(e) => setBreed(e.target.value)}
                 placeholder="French Bulldog, Lab mix, not sure…"
-                className="w-full rounded-xl px-4 py-4 outline-none border-2"
-                style={{ fontSize: "18px", background: "#FFFFFF", borderColor: "#E5E5E5", color: "#1D1D1F" }}
-                onFocus={(e) => (e.target.style.borderColor = "#1D1D1F")}
-                onBlur={(e) => (e.target.style.borderColor = "#E5E5E5")}
+                className="field"
               />
             </div>
 
@@ -584,7 +629,7 @@ export default function CreatePage() {
               <label htmlFor="pet-details" className="block font-semibold mb-2" style={{ fontSize: "16px", color: "#1D1D1F" }}>
                 Anything the AI should get right?
               </label>
-              <p id="pet-details-hint" className="text-sm mb-3" style={{ color: "#6E6E73" }}>
+              <p id="pet-details-hint" className="text-sm mb-3" style={{ color: "#6B625B" }}>
                 e.g. &ldquo;very short stubby tail&rdquo; or &ldquo;white patch over one eye&rdquo;
               </p>
               <textarea
@@ -595,17 +640,8 @@ export default function CreatePage() {
                 onChange={(e) => setDetails(e.target.value)}
                 rows={3}
                 placeholder="Optional — but this is what fixes anything the AI gets wrong"
-                className="w-full rounded-xl px-4 py-4 outline-none border-2"
-                style={{
-                  fontSize: "17px",
-                  background: "#FFFFFF",
-                  borderColor: "#E5E5E5",
-                  color: "#1D1D1F",
-                  lineHeight: 1.5,
-                  resize: "vertical",
-                }}
-                onFocus={(e) => (e.target.style.borderColor = "#1D1D1F")}
-                onBlur={(e) => (e.target.style.borderColor = "#E5E5E5")}
+                className="field"
+                style={{ lineHeight: 1.5, resize: "vertical" }}
               />
             </div>
 
@@ -613,15 +649,14 @@ export default function CreatePage() {
               <button
                 type="button"
                 onClick={() => setHasSecondPet(true)}
-                className="mb-10 text-sm font-semibold rounded-full px-5 py-2.5 border-2 inline-flex items-center gap-2"
-                style={{ borderColor: "#E5E5E5", color: "#1D1D1F", background: "#FFFFFF" }}
+                className="btn-pill-sm btn-ghost mb-10"
               >
-                + Add another pet
+                + Add another dog
               </button>
             ) : (
-              <div className="rounded-2xl p-6 mb-10 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+              <div className="card-warm p-6 mb-10">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold" style={{ color: "#1D1D1F" }}>Second dog</h3>
+                  <h3 className="font-semibold" style={{ fontSize: "18px", color: "#1D1D1F" }}>Second dog</h3>
                   <button
                     type="button"
                     onClick={() => {
@@ -632,7 +667,7 @@ export default function CreatePage() {
                       setPackAdventure(false);
                     }}
                     className="text-sm"
-                    style={{ color: "#EF4444", background: "none", border: "none", cursor: "pointer" }}
+                    style={{ color: "#B91C1C", background: "none", border: "none", cursor: "pointer" }}
                   >
                     Remove
                   </button>
@@ -649,8 +684,7 @@ export default function CreatePage() {
                     value={pet2Name}
                     onChange={(e) => setPet2Name(e.target.value)}
                     placeholder="Luna, Max…"
-                    className="w-full rounded-xl px-4 py-3 outline-none border-2"
-                    style={{ fontSize: "16px", background: "#FFFFFF", borderColor: "#E5E5E5", color: "#1D1D1F" }}
+                    className="field field-sm"
                   />
                 </div>
                 <div className="mb-4">
@@ -665,8 +699,7 @@ export default function CreatePage() {
                     value={pet2Breed}
                     onChange={(e) => setPet2Breed(e.target.value)}
                     placeholder="Lab mix, not sure…"
-                    className="w-full rounded-xl px-4 py-3 outline-none border-2"
-                    style={{ fontSize: "16px", background: "#FFFFFF", borderColor: "#E5E5E5", color: "#1D1D1F" }}
+                    className="field field-sm"
                   />
                 </div>
                 <div>
@@ -680,11 +713,11 @@ export default function CreatePage() {
                     onChange={(e) => setPet2Details(e.target.value)}
                     rows={2}
                     placeholder="Optional"
-                    className="w-full rounded-xl px-4 py-3 outline-none border-2"
-                    style={{ fontSize: "15px", background: "#FFFFFF", borderColor: "#E5E5E5", color: "#1D1D1F", resize: "vertical" }}
+                    className="field field-sm"
+                    style={{ resize: "vertical" }}
                   />
                 </div>
-                <p className="text-xs mt-3" style={{ color: "#6E6E73" }}>Up to 2 pets for now.</p>
+                <p className="text-xs mt-3" style={{ color: "#6B625B" }}>Up to 2 pets for now.</p>
               </div>
             )}
 
@@ -700,9 +733,9 @@ export default function CreatePage() {
 
             <div className="mb-8">
               <div id="occasion-label" className="block font-semibold mb-1" style={{ fontSize: "16px", color: "#1D1D1F" }}>
-                Special occasion? <span style={{ fontWeight: 400, color: "#6E6E73" }}>(optional)</span>
+                Special occasion? <span style={{ fontWeight: 400, color: "#6B625B" }}>(optional)</span>
               </div>
-              <p className="text-sm mb-3" style={{ color: "#6E6E73" }}>We&apos;ll work it into the adventure.</p>
+              <p className="text-sm mb-3" style={{ color: "#6B625B" }}>We&apos;ll work it into the adventure.</p>
               <OccasionPicker selected={occasion} onSelect={setOccasion} labelledBy="occasion-label" />
             </div>
 
@@ -710,7 +743,7 @@ export default function CreatePage() {
               <div id="tier-label" className="block font-semibold mb-1" style={{ fontSize: "16px", color: "#1D1D1F" }}>
                 Choose your quality tier
               </div>
-              <p className="text-sm mb-3" style={{ color: "#6E6E73" }}>
+              <p className="text-sm mb-3" style={{ color: "#6B625B" }}>
                 Every tier keeps your dog&apos;s exact look — this only changes how smooth the animation is.
               </p>
               <TierPicker selected={tier} onSelect={setTier} labelledBy="tier-label" />
@@ -718,14 +751,13 @@ export default function CreatePage() {
 
             {hasSecondPet && (
               <div
-                className="rounded-2xl p-5 mb-8 border flex items-center justify-between gap-4"
-                style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}
+                className="card-warm p-5 mb-8 flex items-center justify-between gap-4"
               >
                 <div>
                   <div className="font-semibold" style={{ fontSize: "16px", color: "#1D1D1F" }}>
                     Pack adventure
                   </div>
-                  <p className="text-sm mt-1" style={{ color: "#6E6E73" }}>
+                  <p className="text-sm mt-1" style={{ color: "#6B625B" }}>
                     Put both pets in the same episode, together.
                   </p>
                 </div>
@@ -739,11 +771,12 @@ export default function CreatePage() {
                     width: 52,
                     height: 30,
                     borderRadius: 9999,
-                    background: packAdventure ? "#1D1D1F" : "#E5E5E5",
+                    background: packAdventure ? "#C2410C" : "#E4D2BE",
                     position: "relative",
                     flexShrink: 0,
                     border: "none",
                     cursor: "pointer",
+                    transition: "background 0.2s ease",
                   }}
                 >
                   <span
@@ -753,9 +786,10 @@ export default function CreatePage() {
                       left: packAdventure ? 25 : 3,
                       width: 24,
                       height: 24,
+                      transition: "left 0.2s cubic-bezier(0.2,0.7,0.3,1)",
                       borderRadius: 9999,
-                      background: "#FFFFFF",
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                      background: "#FFFDF9",
+                      boxShadow: "0 1px 3px rgba(122,84,45,0.35)",
                       display: "block",
                     }}
                   />
@@ -770,15 +804,13 @@ export default function CreatePage() {
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => setStep(1)}
-                className="btn-large flex-1 rounded-2xl border-2"
-                style={{ borderColor: "#E5E5E5", color: "#6E6E73", background: "#FFFFFF" }}
+                className="btn-pill btn-soft btn-ghost flex-1"
               >
                 ← Back
               </button>
               <button
                 onClick={goToPreview}
-                className="btn-large flex-[2] rounded-2xl"
-                style={{ background: "#1D1D1F", color: "#FFFFFF" }}
+                className="btn-pill btn-soft btn-ink flex-[2]"
               >
                 {retryUsed ? "See the new preview →" : "See the preview →"}
               </button>
@@ -788,39 +820,40 @@ export default function CreatePage() {
 
         {step === 3 && (
           <div>
+            <span className="chip mb-5">
+              <Sparkles className="w-4 h-4" />
+              The good bit
+            </span>
             <h1
-              className="font-bold mb-3"
+              className="font-bold mb-3 mt-2"
               style={{ fontSize: "clamp(28px,5vw,38px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
             >
-              Here&apos;s a first look
+              Here&apos;s {displayName}
             </h1>
-            <p className="mb-8" style={{ fontSize: "17px", color: "#6E6E73", lineHeight: 1.6 }}>
+            <p className="mb-8" style={{ fontSize: "18px", color: "#6B625B", lineHeight: 1.6 }}>
               Three scenes from {displayName}&apos;s{" "}
               {ADVENTURE_THEMES.find((t) => t.id === theme)?.label.toLowerCase()}
               {occasion ? ` ${OCCASIONS.find((o) => o.id === occasion)?.label.toLowerCase()}` : ""} adventure
-              {calmMode ? ", rendered in calm mode" : ""} — approve them before we charge you anything.
+              {calmMode ? ", drawn in calm mode" : ""}. Have a good look before you decide —
+              nothing has been charged.
             </p>
 
             {isLoadingPreview ? (
               <div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                   {[0, 1, 2].map((i) => (
-                    <div
-                      key={i}
-                      className="rounded-2xl overflow-hidden border aspect-square relative"
-                      style={{ borderColor: "#E5E5E5", background: "#F5F5F5" }}
-                    >
+                    <div key={i} className="tile aspect-square relative">
                       {stills[i] ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
                         <img
                           src={stills[i]}
                           alt={`${displayName}'s cartoon scene ${i + 1}`}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover pop-in"
                         />
                       ) : (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                          <span className="text-3xl paw-bounce">🐾</span>
-                          <span className="text-xs" style={{ color: "#6E6E73" }}>
+                        <div className="warm-shimmer absolute inset-0 flex flex-col items-center justify-center gap-2">
+                          <span className="text-3xl paw-bounce" aria-hidden="true">🐾</span>
+                          <span className="text-xs font-semibold" style={{ color: "#C2410C" }}>
                             Scene {i + 1}
                           </span>
                         </div>
@@ -828,34 +861,25 @@ export default function CreatePage() {
                     </div>
                   ))}
                 </div>
-                <div className="text-center py-8">
-                  <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: "#6E6E73" }} />
-                  <p style={{ color: "#6E6E73" }}>
-                    {previewProgress ?? `Generating ${displayName}'s cartoon scenes…`}
+                <div className="card-tint p-8 text-center">
+                  <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: "#C2410C" }} />
+                  <p className="font-semibold" style={{ color: "#1D1D1F", fontSize: "17px" }}>
+                    {previewProgress ?? `Drawing ${displayName}'s cartoon scenes…`}
                   </p>
-                  {previewWaitMsg && (
-                    <p className="text-sm mt-2" style={{ color: "#6E6E73" }}>
-                      {previewWaitMsg}
-                    </p>
-                  )}
+                  <p className="text-sm mt-2" style={{ color: "#6B625B" }}>
+                    {previewWaitMsg ?? "Worth the wait, we promise. Stay on this page."}
+                  </p>
                 </div>
               </div>
             ) : previewError ? (
-              <div
-                className="rounded-2xl p-8 border text-center"
-                style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}
-              >
-                <p className="font-semibold mb-2" style={{ color: "#1D1D1F" }}>
+              <div className="card-warm p-8 text-center">
+                <p className="font-semibold mb-2" style={{ fontSize: "18px", color: "#1D1D1F" }}>
                   The studio hit a snag
                 </p>
-                <p className="text-sm mb-6" style={{ color: "#6E6E73" }}>
+                <p className="text-sm mb-6" style={{ color: "#6B625B" }}>
                   {previewError}
                 </p>
-                <button
-                  onClick={goToPreview}
-                  className="btn-large rounded-2xl px-10"
-                  style={{ background: "#1D1D1F", color: "#FFFFFF" }}
-                >
+                <button onClick={goToPreview} className="btn-pill btn-ink">
                   Try again
                 </button>
               </div>
@@ -863,8 +887,8 @@ export default function CreatePage() {
               <>
                 {liveNotice && (
                   <div
-                    className="rounded-2xl p-4 mb-6 border text-sm"
-                    style={{ background: "#FFF7ED", borderColor: "#FED7AA", color: "#9A3412" }}
+                    className="card-tint p-5 mb-6 text-sm"
+                    style={{ borderColor: "#FBD8AE", color: "#9A3412" }}
                   >
                     {liveNotice}
                   </div>
@@ -883,14 +907,19 @@ export default function CreatePage() {
 
         {step === 4 && (
           <div className="max-w-xl mx-auto">
+            <span className="chip chip-blush mb-5">
+              <Heart className="w-4 h-4" />
+              Nearly done — three quick things
+            </span>
             <h1
-              className="font-bold mb-3"
+              className="font-bold mb-3 mt-2"
               style={{ fontSize: "clamp(28px,5vw,38px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
             >
               Almost there
             </h1>
-            <p className="mb-8" style={{ fontSize: "17px", color: "#6E6E73", lineHeight: 1.6 }}>
-              One payment, one YouTube connection, and you choose who can watch.
+            <p className="mb-8" style={{ fontSize: "18px", color: "#6B625B", lineHeight: 1.6 }}>
+              One payment, one YouTube connection, and you say who&apos;s allowed to watch. Then
+              you&apos;re finished forever — future episodes handle themselves.
             </p>
 
             <div className="mb-6">
@@ -900,15 +929,15 @@ export default function CreatePage() {
               <PricingPicker selected={sku} onSelect={setSku} />
             </div>
 
-            <div className="rounded-2xl p-6 mb-6 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
-              <h3 className="font-semibold mb-4" style={{ color: "#1D1D1F" }}>Order summary</h3>
+            <div className="card-warm p-6 mb-6">
+              <h3 className="font-semibold mb-4" style={{ fontSize: "18px", color: "#1D1D1F" }}>Order summary</h3>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span style={{ color: "#6E6E73" }}>{hasSecondPet ? "Dogs" : "Dog"}</span>
+                  <span style={{ color: "#6B625B" }}>{hasSecondPet ? "Dogs" : "Dog"}</span>
                   <span className="font-medium" style={{ color: "#1D1D1F" }}>{displayName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span style={{ color: "#6E6E73" }}>Adventure</span>
+                  <span style={{ color: "#6B625B" }}>Adventure</span>
                   <span className="font-medium" style={{ color: "#1D1D1F" }}>
                     {ADVENTURE_THEMES.find((t) => t.id === theme)?.label}
                     {occasion ? ` + ${OCCASIONS.find((o) => o.id === occasion)?.label}` : ""}
@@ -917,53 +946,52 @@ export default function CreatePage() {
                 </div>
                 {calmMode && (
                   <div className="flex justify-between">
-                    <span style={{ color: "#6E6E73" }}>Mode</span>
+                    <span style={{ color: "#6B625B" }}>Mode</span>
                     <span className="font-medium" style={{ color: "#1D1D1F" }}>Calm mode</span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span style={{ color: "#6E6E73" }}>Plan</span>
+                  <span style={{ color: "#6B625B" }}>Plan</span>
                   <span className="font-medium" style={{ color: "#1D1D1F" }}>{selectedTier.name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span style={{ color: "#6E6E73" }}>Quality</span>
+                  <span style={{ color: "#6B625B" }}>Quality</span>
                   <span className="font-medium" style={{ color: "#1D1D1F" }}>{selectedQualityTier.name}</span>
                 </div>
-                <div className="flex justify-between pt-3 border-t" style={{ borderColor: "#E5E5E5" }}>
-                  <span style={{ color: "#6E6E73" }}>Total</span>
+                <div className="flex justify-between pt-3 border-t" style={{ borderColor: "#F0E2D2" }}>
+                  <span style={{ color: "#6B625B" }}>Total</span>
                   <div className="text-right">
                     <span className="font-bold" style={{ color: "#1D1D1F" }}>{selectedTier.price}</span>
-                    <p className="text-xs font-medium" style={{ color: "#F97316" }}>most of this funds dog rescues</p>
+                    <p className="text-xs font-medium" style={{ color: "#C2410C" }}>most of this funds dog rescues</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-2xl p-6 mb-6 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
-              <h3 className="font-semibold mb-2" style={{ color: "#1D1D1F" }}>Payment</h3>
-              <p className="text-sm mb-4" style={{ color: "#6E6E73" }}>
+            <div className="card-warm p-6 mb-6">
+              <h3 className="font-semibold mb-2" style={{ fontSize: "18px", color: "#1D1D1F" }}>Payment</h3>
+              <p className="text-sm mb-4" style={{ color: "#6B625B" }}>
                 This is a live demo — no card will ever be charged here.
               </p>
               <button
                 disabled
-                className="btn-large w-full rounded-2xl cursor-not-allowed"
-                style={{ background: "#E5E5E5", color: "#9CA3AF" }}
+                className="btn-pill btn-soft btn-block"
               >
                 Pay {selectedTier.price} — Demo mode
               </button>
             </div>
 
-            <div className="rounded-2xl p-6 mb-6 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
-              <h3 className="font-semibold mb-1" style={{ color: "#1D1D1F" }}>Where should your donation go?</h3>
-              <p className="text-sm mb-5" style={{ color: "#6E6E73" }}>
+            <div className="card-warm p-6 mb-6">
+              <h3 className="font-semibold mb-1" style={{ fontSize: "18px", color: "#1D1D1F" }}>Where should your donation go?</h3>
+              <p className="text-sm mb-5" style={{ color: "#6B625B" }}>
                 Part of every order funds a dog rescue. Pick one, or let us choose.
               </p>
               <CharityPicker selected={charity} onSelect={setCharity} />
             </div>
 
-            <div className="rounded-2xl p-6 mb-6 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
-              <h3 className="font-semibold mb-2" style={{ color: "#1D1D1F" }}>Connect your YouTube account</h3>
-              <p className="text-sm mb-4" style={{ color: "#6E6E73", lineHeight: 1.6 }}>
+            <div className="card-warm p-6 mb-6">
+              <h3 className="font-semibold mb-2" style={{ fontSize: "18px", color: "#1D1D1F" }}>Connect your YouTube account</h3>
+              <p className="text-sm mb-4" style={{ color: "#6B625B", lineHeight: 1.6 }}>
                 This is the whole trick: once you connect your account, every new episode shows up
                 on your dog&apos;s own YouTube channel by itself. No files, no apps, nothing to remember.
               </p>
@@ -979,8 +1007,8 @@ export default function CreatePage() {
                 <button
                   onClick={handleConnectYoutube}
                   disabled={isConnectingYoutube}
-                  className="btn-large w-full rounded-2xl flex items-center justify-center gap-2"
-                  style={{ background: "#FF0000", color: "#FFFFFF" }}
+                  className="btn-pill btn-soft btn-block"
+                  style={{ background: "#C50000", color: "#FFFFFF" }}
                 >
                   {isConnectingYoutube ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -992,9 +1020,9 @@ export default function CreatePage() {
               )}
             </div>
 
-            <div className="rounded-2xl p-6 mb-8 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
-              <h3 className="font-semibold mb-1" style={{ color: "#1D1D1F" }}>Who can watch?</h3>
-              <p className="text-sm mb-5" style={{ color: "#6E6E73" }}>
+            <div className="card-warm p-6 mb-8">
+              <h3 className="font-semibold mb-1" style={{ fontSize: "18px", color: "#1D1D1F" }}>Who can watch?</h3>
+              <p className="text-sm mb-5" style={{ color: "#6B625B" }}>
                 You can change this later. It only affects this episode.
               </p>
               <PrivacyPicker selected={privacy} onSelect={setPrivacy} />
@@ -1003,8 +1031,8 @@ export default function CreatePage() {
             {checkoutError && (
               <div
                 role="alert"
-                className="rounded-2xl p-4 mb-6 border text-sm"
-                style={{ background: "#FEF2F2", borderColor: "#FECACA", color: "#B91C1C" }}
+                className="card-warm p-5 mb-6 text-sm"
+                style={{ background: "#FEF2F2", borderColor: "#F3B9B9", color: "#B91C1C" }}
               >
                 {checkoutError}
               </div>
@@ -1013,20 +1041,14 @@ export default function CreatePage() {
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => setStep(3)}
-                className="btn-large flex-1 rounded-2xl border-2"
-                style={{ borderColor: "#E5E5E5", color: "#6E6E73", background: "#FFFFFF" }}
+                className="btn-pill btn-soft btn-ghost flex-1"
               >
                 ← Back
               </button>
               <button
                 onClick={handleFinishDemoCheckout}
                 disabled={!youtubeConnected || isFinishing}
-                className="btn-large flex-[2] rounded-2xl"
-                style={{
-                  background: !youtubeConnected || isFinishing ? "#E5E5E5" : "#1D1D1F",
-                  color: !youtubeConnected || isFinishing ? "#9CA3AF" : "#FFFFFF",
-                  cursor: !youtubeConnected || isFinishing ? "not-allowed" : "pointer",
-                }}
+                className="btn-pill btn-soft btn-ink flex-[2]"
               >
                 {isFinishing
                   ? "Finishing up…"
@@ -1048,17 +1070,13 @@ export default function CreatePage() {
                 >
                   Animating {displayName}&apos;s episode
                 </h1>
-                <p className="mb-8" style={{ fontSize: "17px", color: "#6E6E73", lineHeight: 1.6 }}>
-                  Each scene takes about 3–6 minutes to animate. You can leave this page —
-                  we&apos;ll pick up right where you left off when you come back.
+                <p className="mb-8" style={{ fontSize: "18px", color: "#6B625B", lineHeight: 1.6 }}>
+                  Each scene takes about 3–6 minutes to bring to life. You can close this page —
+                  we&apos;ll pick up exactly where you left off when you come back.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                   {[0, 1, 2].map((i) => (
-                    <div
-                      key={i}
-                      className="rounded-2xl overflow-hidden border relative aspect-video"
-                      style={{ borderColor: "#E5E5E5", background: "#F5F5F5" }}
-                    >
+                    <div key={i} className="tile relative aspect-video">
                       {stills[i] && (
                         /* eslint-disable-next-line @next/next/no-img-element */
                         <img
@@ -1071,23 +1089,21 @@ export default function CreatePage() {
                       <div className="absolute inset-0 flex items-center justify-center">
                         {i < clipUrls.length ? (
                           <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center"
-                            style={{ background: "#10B981" }}
+                            className="w-9 h-9 rounded-full flex items-center justify-center pop-in"
+                            style={{ background: "#047857", boxShadow: "0 2px 8px rgba(4,120,87,0.4)" }}
                           >
                             <Check className="w-5 h-5" style={{ color: "#FFFFFF" }} />
                           </div>
                         ) : i === clipScene ? (
-                          <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#1D1D1F" }} />
+                          <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#C2410C" }} />
                         ) : (
-                          <span className="text-xs font-semibold" style={{ color: "#6E6E73" }}>
-                            Waiting
-                          </span>
+                          <span className="chip chip-quiet chip-sm">Waiting</span>
                         )}
                       </div>
                     </div>
                   ))}
                 </div>
-                <p className="text-sm" style={{ color: "#6E6E73" }}>
+                <p className="text-sm font-semibold" style={{ color: "#C2410C" }}>
                   {clipWaitMsg ?? `Animating scene ${Math.min(clipScene, 2) + 1} of 3…`}
                 </p>
               </div>
@@ -1097,16 +1113,15 @@ export default function CreatePage() {
               <div>
                 <div
                   role="alert"
-                  className="rounded-2xl p-8 border text-center mb-8"
-                  style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}
+                  className="card-warm p-8 text-center mb-8"
                 >
                   <p className="font-semibold mb-2" style={{ color: "#1D1D1F" }}>
                     The animation hit a snag
                   </p>
-                  <p className="text-sm mb-2" style={{ color: "#6E6E73" }}>
+                  <p className="text-sm mb-2" style={{ color: "#6B625B" }}>
                     {clipError}
                   </p>
-                  <p className="text-sm mb-6" style={{ color: "#6E6E73" }}>
+                  <p className="text-sm mb-6" style={{ color: "#6B625B" }}>
                     {clipUrls.length > 0
                       ? `Scene${clipUrls.length > 1 ? "s" : ""} ${clipUrls
                           .map((_, i) => i + 1)
@@ -1117,8 +1132,7 @@ export default function CreatePage() {
                   </p>
                   <button
                     onClick={() => void runClipGeneration(stills, petName, theme, tier)}
-                    className="btn-large rounded-2xl px-10"
-                    style={{ background: "#1D1D1F", color: "#FFFFFF" }}
+                    className="btn-pill btn-ink"
                   >
                     Resume animating
                   </button>
@@ -1128,7 +1142,7 @@ export default function CreatePage() {
                     URLs expire in about an hour, so show them right away. */}
                 {clipUrls.length > 0 && (
                   <div>
-                    <p className="text-sm mb-3 text-center" style={{ color: "#6E6E73" }}>
+                    <p className="text-sm mb-3 text-center" style={{ color: "#6B625B" }}>
                       What&apos;s ready so far:
                     </p>
                     <EpisodePlayer clips={clipUrls} petName={displayName} />
@@ -1141,10 +1155,10 @@ export default function CreatePage() {
               <div>
                 <div className="text-center mb-8">
                   <div
-                    className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
-                    style={{ background: "#ECFDF5" }}
+                    className="icon-well icon-well-leaf mx-auto mb-6 pop-in"
+                    style={{ width: 80, height: 80, borderRadius: 9999 }}
                   >
-                    <Check className="w-8 h-8" style={{ color: "#10B981" }} />
+                    <Check className="w-8 h-8" style={{ color: "#047857" }} />
                   </div>
                   <h1
                     className="font-bold mb-3"
@@ -1152,7 +1166,7 @@ export default function CreatePage() {
                   >
                     {displayName}&apos;s episode is ready
                   </h1>
-                  <p style={{ fontSize: "17px", color: "#6E6E73", lineHeight: 1.6 }}>
+                  <p style={{ fontSize: "17px", color: "#6B625B", lineHeight: 1.6 }}>
                     Three scenes playing on a loop, just like on the TV. Your channel version
                     arrives as one continuous video.
                   </p>
@@ -1160,27 +1174,27 @@ export default function CreatePage() {
 
                 <EpisodePlayer clips={clipUrls} petName={displayName} />
 
-                <p className="text-sm mt-4 text-center" style={{ color: "#6E6E73" }}>
+                <p className="text-sm mt-4 text-center" style={{ color: "#6B625B" }}>
                   Download links stay fresh for about an hour — save your favorite scenes now.
                 </p>
 
                 {/* Parity with the demo confirmation: sharing and the poster
                     offer were previously only reachable in demo mode. */}
-                <div className="rounded-2xl p-6 mt-8 border text-left" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
-                  <h3 className="font-semibold mb-4" style={{ color: "#1D1D1F" }}>Share {displayName}&apos;s episode</h3>
+                <div className="card-warm p-6 mt-8 text-left">
+                  <h3 className="font-semibold mb-4" style={{ fontSize: "18px", color: "#1D1D1F" }}>Share {displayName}&apos;s episode</h3>
                   <div className="flex flex-col sm:flex-row gap-3">
                     <button
                       onClick={handleCopyLink}
-                      className="rounded-2xl border-2 flex items-center justify-center gap-2 flex-1"
-                      style={{ borderColor: "#E5E5E5", color: "#1D1D1F", background: "#FFFFFF", fontSize: "15px", minHeight: "48px", fontWeight: 600 }}
+                      className="btn-pill btn-soft btn-ghost flex-1"
+                      style={{ minHeight: "50px", fontSize: "16px" }}
                     >
                       <Copy className="w-4 h-4" />
                       {copyState === "copied" ? "Link copied!" : "Copy link"}
                     </button>
                     <button
                       onClick={() => setShowShareModal(true)}
-                      className="rounded-2xl border-2 flex items-center justify-center gap-2 flex-1"
-                      style={{ borderColor: "#E5E5E5", color: "#1D1D1F", background: "#FFFFFF", fontSize: "15px", minHeight: "48px", fontWeight: 600 }}
+                      className="btn-pill btn-soft btn-ghost flex-1"
+                      style={{ minHeight: "50px", fontSize: "16px" }}
                     >
                       <Send className="w-4 h-4" />
                       Send to another TV
@@ -1192,11 +1206,11 @@ export default function CreatePage() {
                   <PosterCard petName={displayName} />
                 </div>
 
-                <p className="text-sm font-medium mt-8 mb-1 text-center" style={{ color: "#F97316" }}>
+                <p className="text-sm font-medium mt-8 mb-1 text-center" style={{ color: "#C2410C" }}>
                   🐾 Thank you — part of every real order goes to a dog rescue.
                 </p>
                 <p className="text-sm text-center mb-8">
-                  <Link href="/impact" style={{ color: "#6E6E73" }}>
+                  <Link href="/impact" style={{ color: "#6B625B" }}>
                     See the public impact ledger →
                   </Link>
                 </p>
@@ -1204,8 +1218,7 @@ export default function CreatePage() {
                 <div className="text-center">
                   <button
                     onClick={resetFlow}
-                    className="btn-large rounded-2xl px-10"
-                    style={{ background: "#1D1D1F", color: "#FFFFFF" }}
+                    className="btn-pill btn-ink"
                   >
                     Create another episode
                   </button>
@@ -1218,10 +1231,10 @@ export default function CreatePage() {
         {step === 5 && clipPhase === "none" && (
           <div className="max-w-xl mx-auto text-center">
             <div
-              className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
-              style={{ background: "#ECFDF5" }}
+              className="icon-well icon-well-leaf mx-auto mb-6 pop-in"
+                    style={{ width: 80, height: 80, borderRadius: 9999 }}
             >
-              <Check className="w-8 h-8" style={{ color: "#10B981" }} />
+              <Check className="w-8 h-8" style={{ color: "#047857" }} />
             </div>
             <h1
               className="font-bold mb-3"
@@ -1229,7 +1242,7 @@ export default function CreatePage() {
             >
               {displayName}&apos;s episode is on its way
             </h1>
-            <p className="mb-10" style={{ fontSize: "17px", color: "#6E6E73", lineHeight: 1.6 }}>
+            <p className="mb-10" style={{ fontSize: "17px", color: "#6B625B", lineHeight: 1.6 }}>
               {displayName}&apos;s episode will appear on your YouTube channel in about{" "}
               {confirmEta} minutes. Here&apos;s a sample of what a finished ToonTails episode looks like:
             </p>
@@ -1237,22 +1250,22 @@ export default function CreatePage() {
             <YouTubeEmbed videoId={confirmVideoId} title={`${displayName}'s sample episode`} />
 
             {authConfigured && (
-              <div className="rounded-2xl p-6 mt-8 mb-6 border text-left" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+              <div className="card-warm p-6 mt-8 mb-6 text-left">
                 {authUser ? (
                   <>
-                    <h3 className="font-semibold mb-2" style={{ color: "#1D1D1F" }}>
+                    <h3 className="font-semibold mb-2" style={{ fontSize: "18px", color: "#1D1D1F" }}>
                       Signed in as {authUser.email}
                     </h3>
-                    <p className="text-sm" style={{ color: "#6E6E73", lineHeight: 1.6 }}>
+                    <p className="text-sm" style={{ color: "#6B625B", lineHeight: 1.6 }}>
                       Your episodes will publish to this account&apos;s YouTube channel (coming soon).
                     </p>
                   </>
                 ) : (
                   <>
-                    <h3 className="font-semibold mb-2" style={{ color: "#1D1D1F" }}>
+                    <h3 className="font-semibold mb-2" style={{ fontSize: "18px", color: "#1D1D1F" }}>
                       Want future episodes on your own channel?
                     </h3>
-                    <p className="text-sm mb-4" style={{ color: "#6E6E73", lineHeight: 1.6 }}>
+                    <p className="text-sm mb-4" style={{ color: "#6B625B", lineHeight: 1.6 }}>
                       Sign in with Google and we&apos;ll remember your account for when auto-publishing
                       goes live.
                     </p>
@@ -1264,40 +1277,39 @@ export default function CreatePage() {
 
             {calmMode && (
               <div
-                className="rounded-2xl p-5 mt-8 border text-left flex items-start gap-3"
-                style={{ background: "#EFF6FF", borderColor: "#BFDBFE" }}
+                className="card-sky p-5 mt-8 text-left flex items-start gap-3"
               >
-                <Moon className="w-5 h-5 flex-shrink-0" style={{ color: "#2563EB", marginTop: "2px" }} />
+                <Moon className="w-5 h-5 flex-shrink-0" style={{ color: "#1D5A80", marginTop: "2px" }} />
                 <p className="text-sm" style={{ color: "#1D1D1F", lineHeight: 1.5 }}>
                   Rendered in <strong>calm mode</strong> — gentle pacing and dog-vision colors, made for anxious pups.
                 </p>
               </div>
             )}
 
-            <div className="rounded-2xl p-6 mt-8 mb-6 border text-left" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
-              <h3 className="font-semibold mb-3" style={{ color: "#1D1D1F" }}>How to watch on your TV</h3>
-              <ol className="space-y-2 text-sm" style={{ color: "#6E6E73", lineHeight: 1.7 }}>
+            <div className="card-warm p-6 mt-8 mb-6 text-left">
+              <h3 className="font-semibold mb-3" style={{ fontSize: "18px", color: "#1D1D1F" }}>How to watch on your TV</h3>
+              <ol className="space-y-2 text-sm" style={{ color: "#6B625B", lineHeight: 1.7 }}>
                 <li>1. Open the YouTube app on your TV — most smart TVs already have it.</li>
                 <li>2. Sign in with the same Google account you just connected.</li>
                 <li>3. Look under &ldquo;Your channels&rdquo; for {displayName}&apos;s channel.</li>
               </ol>
             </div>
 
-            <div className="rounded-2xl p-6 mb-6 border text-left" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
-              <h3 className="font-semibold mb-4" style={{ color: "#1D1D1F" }}>Share {displayName}&apos;s episode</h3>
+            <div className="card-warm p-6 mb-6 text-left">
+              <h3 className="font-semibold mb-4" style={{ fontSize: "18px", color: "#1D1D1F" }}>Share {displayName}&apos;s episode</h3>
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={handleCopyLink}
-                  className="rounded-2xl border-2 flex items-center justify-center gap-2 flex-1"
-                  style={{ borderColor: "#E5E5E5", color: "#1D1D1F", background: "#FFFFFF", fontSize: "15px", minHeight: "48px", fontWeight: 600 }}
+                  className="btn-pill btn-soft btn-ghost flex-1"
+                      style={{ minHeight: "50px", fontSize: "16px" }}
                 >
                   <Copy className="w-4 h-4" />
                   {copyState === "copied" ? "Link copied!" : "Copy link"}
                 </button>
                 <button
                   onClick={() => setShowShareModal(true)}
-                  className="rounded-2xl border-2 flex items-center justify-center gap-2 flex-1"
-                  style={{ borderColor: "#E5E5E5", color: "#1D1D1F", background: "#FFFFFF", fontSize: "15px", minHeight: "48px", fontWeight: 600 }}
+                  className="btn-pill btn-soft btn-ghost flex-1"
+                      style={{ minHeight: "50px", fontSize: "16px" }}
                 >
                   <Send className="w-4 h-4" />
                   Send to another TV
@@ -1309,20 +1321,19 @@ export default function CreatePage() {
               <PosterCard petName={displayName} />
             </div>
 
-            <p className="text-sm font-medium mb-1" style={{ color: "#F97316" }}>
+            <p className="text-sm font-medium mb-1" style={{ color: "#C2410C" }}>
               🐾 Thank you — part of what you paid is going to{" "}
               {charity === "choose-for-me" ? "a dog rescue we choose for you" : selectedCharityObj.name}.
             </p>
             <p className="text-sm mb-6">
-              <Link href="/impact" style={{ color: "#6E6E73" }}>
+              <Link href="/impact" style={{ color: "#6B625B" }}>
                 See the public impact ledger →
               </Link>
             </p>
 
             <button
               onClick={resetFlow}
-              className="btn-large rounded-2xl px-10"
-              style={{ background: "#1D1D1F", color: "#FFFFFF" }}
+              className="btn-pill btn-ink"
             >
               Create another episode
             </button>

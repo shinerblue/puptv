@@ -27,7 +27,7 @@ export default function PricingPicker({ selected, onSelect }: PricingPickerProps
             <div className="font-semibold mt-1" style={{ fontSize: "15px" }}>
               {tier.name}
             </div>
-            <div className="text-xs mt-2" style={{ color: isSelected ? "#D4D4D4" : "#6E6E73", lineHeight: 1.5 }}>
+            <div className="text-xs mt-2" style={{ color: isSelected ? "#D6CCC0" : "#6B625B", lineHeight: 1.5 }}>
               {tier.tagline}
             </div>
           </button>
