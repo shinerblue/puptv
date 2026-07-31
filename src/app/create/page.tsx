@@ -2,114 +2,112 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import PhotoUploader from "@/components/PhotoUploader";
-import ProcessingStatus, { ProcessingStage } from "@/components/ProcessingStatus";
-import VideoPlayer from "@/components/VideoPlayer";
+import { ArrowLeft, Loader2, Tv, Check } from "lucide-react";
+import PhotoUploader, { CompressedPhoto } from "@/components/PhotoUploader";
+import ThemePicker, { ADVENTURE_THEMES } from "@/components/ThemePicker";
+import PreviewGate from "@/components/PreviewGate";
+import PrivacyPicker, { PrivacyOption } from "@/components/PrivacyPicker";
+import YouTubeEmbed from "@/components/YouTubeEmbed";
 
-const adventureThemes = [
-  { id: "park", label: "Sunny Park", emoji: "🌳" },
-  { id: "beach", label: "Beach Day", emoji: "🏖️" },
-  { id: "space", label: "Space Explorer", emoji: "🚀" },
-  { id: "mountain", label: "Mountain Hike", emoji: "🏔️" },
-  { id: "city", label: "City Adventure", emoji: "🏙️" },
-];
+const STEP_LABELS = ["Photos", "Details", "Preview", "Checkout", "Done"];
+
+type Step = 1 | 2 | 3 | 4 | 5;
 
 export default function CreatePage() {
-  const [step, setStep] = useState<"upload" | "customize" | "processing" | "result">("upload");
-  const [photos, setPhotos] = useState<File[]>([]);
-  const [dogName, setDogName] = useState("");
-  const [selectedTheme, setSelectedTheme] = useState("park");
-  const [processingStage, setProcessingStage] = useState<ProcessingStage>("uploading");
-  const [progress, setProgress] = useState(0);
-  const [cartoonPreview, setCartoonPreview] = useState<string | undefined>();
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState<Step>(1);
 
-  const handlePhotosSelected = useCallback((files: File[]) => {
-    setPhotos(files);
-  }, []);
+  const [photos, setPhotos] = useState<CompressedPhoto[]>([]);
+  const [petName, setPetName] = useState("");
+  const [breed, setBreed] = useState("");
+  const [details, setDetails] = useState("");
+  const [theme, setTheme] = useState("park");
 
-  const handleStartProcessing = async () => {
-    if (photos.length === 0) return;
+  const [stills, setStills] = useState<string[]>([]);
+  const [retryUsed, setRetryUsed] = useState(false);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
 
-    setStep("processing");
-    setError(null);
+  const [privacy, setPrivacy] = useState<PrivacyOption>("unlisted");
+  const [youtubeConnected, setYoutubeConnected] = useState(false);
+  const [youtubeChannelName, setYoutubeChannelName] = useState("");
+  const [isConnectingYoutube, setIsConnectingYoutube] = useState(false);
 
+  const [isFinishing, setIsFinishing] = useState(false);
+  const [confirmEta, setConfirmEta] = useState(15);
+  const [confirmVideoId, setConfirmVideoId] = useState("PIcIfIdC1kA");
+
+  const displayName = petName.trim() || "Your dog";
+
+  const handlePhotosSelected = useCallback((p: CompressedPhoto[]) => setPhotos(p), []);
+
+  const goToPreview = useCallback(async () => {
+    setStep(3);
+    setIsLoadingPreview(true);
     try {
-      // Stage 1: Compress image client-side (avoids Vercel 4.5MB body limit)
-      setProcessingStage("uploading");
-      setProgress(0);
-
-      const file = photos[0];
-      const compressedDataUrl = await compressImage(file, 768);
-      setProgress(100);
-
-      // Stage 2: Cartoonify
-      setProcessingStage("cartoonifying");
-      setProgress(0);
-
-      const cartoonRes = await fetch("/api/cartoonify", {
+      const res = await fetch("/api/cartoonify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl: compressedDataUrl }),
+        body: JSON.stringify({ petName, breed, details, theme }),
       });
+      const data = await res.json();
+      setStills(data.stills || []);
+    } finally {
+      setIsLoadingPreview(false);
+    }
+  }, [petName, breed, details, theme]);
 
-      if (!cartoonRes.ok) {
-        const errData = await cartoonRes.json().catch(() => ({}));
-        throw new Error(errData.details || errData.error || "Failed to create cartoon");
-      }
+  const handleApprovePreview = () => setStep(4);
 
-      const cartoonData = await cartoonRes.json();
-      setCartoonPreview(cartoonData.cartoonUrl);
-      setProgress(100);
+  const handleRetryPreview = () => {
+    setRetryUsed(true);
+    setStep(2);
+  };
 
-      // Stage 3: Generate video
-      setProcessingStage("generating_video");
-      setProgress(0);
-
-      const videoRes = await fetch("/api/generate-video", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cartoonUrl: cartoonData.cartoonUrl,
-          dogName,
-          adventureTheme: selectedTheme,
-        }),
-      });
-
-      if (!videoRes.ok) {
-        throw new Error("Failed to generate video");
-      }
-
-      const videoData = await videoRes.json();
-      setProgress(100);
-
-      // Stage 4: Finalize
-      setProcessingStage("finalizing");
-      setProgress(50);
-      await new Promise((r) => setTimeout(r, 1000));
-      setProgress(100);
-
-      setProcessingStage("complete");
-      setVideoUrl(videoData.videoUrl);
-      setTimeout(() => setStep("result"), 800);
-    } catch (err: unknown) {
-      console.error("Processing error:", err);
-      setProcessingStage("error");
-      setError(
-        err instanceof Error ? err.message : "Something went wrong. Please try again."
-      );
+  const handleConnectYoutube = async () => {
+    setIsConnectingYoutube(true);
+    try {
+      const res = await fetch("/api/connect-youtube", { method: "POST" });
+      const data = await res.json();
+      setYoutubeConnected(true);
+      setYoutubeChannelName(data.channelName || "Demo Channel");
+    } finally {
+      setIsConnectingYoutube(false);
     }
   };
 
-  const steps = ["Upload", "Customize", "Create"];
-  const stepKeys = ["upload", "customize", "processing"];
-  const currentStepIdx = step === "result" ? 3 : stepKeys.indexOf(step);
+  const handleFinishDemoCheckout = async () => {
+    setIsFinishing(true);
+    try {
+      await fetch("/api/checkout", { method: "POST" });
+      const res = await fetch("/api/generate-video", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ petName, breed, details, theme, privacy }),
+      });
+      const data = await res.json();
+      setConfirmEta(data.etaMinutes ?? 15);
+      setConfirmVideoId(data.sampleYoutubeVideoId || "PIcIfIdC1kA");
+      setStep(5);
+    } finally {
+      setIsFinishing(false);
+    }
+  };
+
+  const resetFlow = () => {
+    setStep(1);
+    setPhotos([]);
+    setPetName("");
+    setBreed("");
+    setDetails("");
+    setTheme("park");
+    setStills([]);
+    setRetryUsed(false);
+    setPrivacy("unlisted");
+    setYoutubeConnected(false);
+    setYoutubeChannelName("");
+  };
 
   return (
     <div className="min-h-screen" style={{ background: "#FAFAFA" }}>
-      {/* Header */}
       <nav
         className="sticky top-0 z-50 border-b"
         style={{
@@ -120,99 +118,89 @@ export default function CreatePage() {
         }}
       >
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2"
-            style={{ color: "#6E6E73" }}
-          >
+          <Link href="/" className="flex items-center gap-2" style={{ color: "#6E6E73" }}>
             <ArrowLeft className="w-4 h-4" />
-            <span className="font-bold text-lg" style={{ color: "#1D1D1F" }}>
-              PupTV
-            </span>
+            <span className="font-bold text-lg" style={{ color: "#1D1D1F" }}>PupTV</span>
           </Link>
 
-          <div className="flex items-center gap-1.5">
-            {steps.map((label, i) => {
-              const isActive = i === currentStepIdx;
-              const isComplete = i < currentStepIdx;
+          <div className="hidden sm:flex items-center gap-1.5">
+            {STEP_LABELS.map((label, i) => {
+              const idx = (i + 1) as Step;
+              const isActive = idx === step;
+              const isComplete = idx < step;
               return (
                 <div key={label} className="flex items-center gap-1.5">
                   <div className="flex items-center gap-1.5">
                     <div
-                      className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold"
+                      className="step-dot"
                       style={{
                         background: isComplete ? "#10B981" : isActive ? "#1D1D1F" : "#E5E5E5",
                         color: isComplete || isActive ? "#FFFFFF" : "#9CA3AF",
                       }}
                     >
-                      {isComplete ? "✓" : i + 1}
+                      {isComplete ? <Check className="w-4 h-4" /> : idx}
                     </div>
                     <span
-                      className="text-sm hidden sm:inline"
-                      style={{
-                        color: isActive ? "#1D1D1F" : "#9CA3AF",
-                        fontWeight: isActive ? 600 : 400,
-                      }}
+                      className="text-sm hidden md:inline"
+                      style={{ color: isActive ? "#1D1D1F" : "#9CA3AF", fontWeight: isActive ? 600 : 400 }}
                     >
                       {label}
                     </span>
                   </div>
-                  {i < steps.length - 1 && (
-                    <div
-                      className="w-5 h-px mx-0.5"
-                      style={{ background: i < currentStepIdx ? "#10B981" : "#E5E5E5" }}
-                    />
+                  {i < STEP_LABELS.length - 1 && (
+                    <div className="w-4 h-px" style={{ background: idx < step ? "#10B981" : "#E5E5E5" }} />
                   )}
                 </div>
               );
             })}
           </div>
+
+          <span className="sm:hidden text-sm font-medium" style={{ color: "#6E6E73" }}>
+            Step {step} of 5
+          </span>
         </div>
       </nav>
 
       <main className="max-w-3xl mx-auto px-6 py-12">
-        {step === "upload" && (
+
+        {step === 1 && (
           <div className="max-w-xl mx-auto">
             <h1
               className="font-bold mb-3"
               style={{ fontSize: "clamp(28px,5vw,38px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
             >
-              Upload your dog&apos;s photos
+              Add photos of your dog
             </h1>
-            <p className="mb-8" style={{ color: "#6E6E73" }}>
-              Share 1–5 photos showing your pup from different angles. More variety = better cartoon.
+            <p className="mb-8" style={{ fontSize: "17px", color: "#6E6E73", lineHeight: 1.6 }}>
+              1 to 5 photos, any angle. Clear, well-lit shots work best — they&apos;re how the AI
+              keeps your dog looking like your dog.
             </p>
 
             <PhotoUploader onPhotosSelected={handlePhotosSelected} />
 
             {photos.length > 0 && (
               <button
-                onClick={() => setStep("customize")}
-                className="mt-8 w-full font-semibold py-4 rounded-2xl text-lg flex items-center justify-center gap-2"
+                onClick={() => setStep(2)}
+                className="btn-large mt-8 w-full rounded-2xl flex items-center justify-center gap-2"
                 style={{ background: "#1D1D1F", color: "#FFFFFF" }}
               >
-                Next: Customize <span>→</span>
+                Next: Tell us about your dog <span>→</span>
               </button>
             )}
 
-            <div
-              className="mt-8 rounded-2xl p-6 border"
-              style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}
-            >
+            <div className="mt-8 rounded-2xl p-6 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
               <h3 className="font-semibold mb-4" style={{ color: "#1D1D1F" }}>
-                Tips for the best cartoon
+                Tips for the best result
               </h3>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
                   { ok: true, text: "Clear, well-lit photos" },
-                  { ok: true, text: "Multiple angles" },
-                  { ok: true, text: "Show unique markings" },
+                  { ok: true, text: "A few different angles" },
+                  { ok: true, text: "Show any unique markings" },
                   { ok: false, text: "Blurry or very dark photos" },
                 ].map((tip, i) => (
                   <div key={i} className="flex items-start gap-2 text-sm">
-                    <span style={{ color: tip.ok ? "#10B981" : "#EF4444" }}>
-                      {tip.ok ? "✓" : "✕"}
-                    </span>
+                    <span style={{ color: tip.ok ? "#10B981" : "#EF4444" }}>{tip.ok ? "✓" : "✕"}</span>
                     <span style={{ color: "#6E6E73" }}>{tip.text}</span>
                   </div>
                 ))}
@@ -221,177 +209,292 @@ export default function CreatePage() {
           </div>
         )}
 
-        {step === "customize" && (
+        {step === 2 && (
           <div className="max-w-xl mx-auto">
             <h1
               className="font-bold mb-3"
               style={{ fontSize: "clamp(28px,5vw,38px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
             >
-              Customize the adventure
+              Tell us about your dog
             </h1>
-            <p className="mb-8" style={{ color: "#6E6E73" }}>
-              Give your pup a name and choose their adventure setting
+            <p className="mb-8" style={{ fontSize: "17px", color: "#6E6E73", lineHeight: 1.6 }}>
+              A name, breed, and any details help the AI get {displayName} right.
             </p>
 
             <div className="mb-6">
-              <label className="block text-sm font-semibold mb-2" style={{ color: "#1D1D1F" }}>
+              <label className="block font-semibold mb-2" style={{ fontSize: "16px", color: "#1D1D1F" }}>
                 Dog&apos;s name
               </label>
               <input
                 type="text"
-                value={dogName}
-                onChange={(e) => setDogName(e.target.value)}
-                placeholder="Buddy, Luna, Max…"
-                className="w-full rounded-xl px-4 py-3 text-base outline-none border-2"
-                style={{ background: "#FFFFFF", borderColor: "#E5E5E5", color: "#1D1D1F" }}
+                value={petName}
+                onChange={(e) => setPetName(e.target.value)}
+                placeholder="Dutch, Luna, Max…"
+                className="w-full rounded-xl px-4 py-4 outline-none border-2"
+                style={{ fontSize: "18px", background: "#FFFFFF", borderColor: "#E5E5E5", color: "#1D1D1F" }}
                 onFocus={(e) => (e.target.style.borderColor = "#1D1D1F")}
                 onBlur={(e) => (e.target.style.borderColor = "#E5E5E5")}
               />
             </div>
 
-            <div className="mb-8">
-              <label className="block text-sm font-semibold mb-3" style={{ color: "#1D1D1F" }}>
-                Adventure theme
+            <div className="mb-6">
+              <label className="block font-semibold mb-2" style={{ fontSize: "16px", color: "#1D1D1F" }}>
+                Breed (or your best guess)
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {adventureThemes.map((theme) => {
-                  const isSelected = selectedTheme === theme.id;
-                  return (
-                    <button
-                      key={theme.id}
-                      onClick={() => setSelectedTheme(theme.id)}
-                      className="p-4 rounded-2xl text-left border-2"
-                      style={{
-                        background: isSelected ? "#1D1D1F" : "#FFFFFF",
-                        borderColor: isSelected ? "#1D1D1F" : "#E5E5E5",
-                        color: isSelected ? "#FFFFFF" : "#1D1D1F",
-                      }}
-                    >
-                      <div className="text-2xl mb-2">{theme.emoji}</div>
-                      <div className="text-sm font-medium">{theme.label}</div>
-                    </button>
-                  );
-                })}
-              </div>
+              <input
+                type="text"
+                value={breed}
+                onChange={(e) => setBreed(e.target.value)}
+                placeholder="French Bulldog, Lab mix, not sure…"
+                className="w-full rounded-xl px-4 py-4 outline-none border-2"
+                style={{ fontSize: "18px", background: "#FFFFFF", borderColor: "#E5E5E5", color: "#1D1D1F" }}
+                onFocus={(e) => (e.target.style.borderColor = "#1D1D1F")}
+                onBlur={(e) => (e.target.style.borderColor = "#E5E5E5")}
+              />
             </div>
 
-            <div
-              className="rounded-2xl p-6 mb-8 border"
-              style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}
-            >
-              <h3 className="font-semibold mb-4" style={{ color: "#1D1D1F" }}>Order summary</h3>
-              <div className="space-y-3 text-sm">
-                {[
-                  { label: "Photos", value: String(photos.length) },
-                  { label: "Name", value: dogName || "—" },
-                  { label: "Theme", value: adventureThemes.find((t) => t.id === selectedTheme)?.label || "" },
-                ].map((row) => (
-                  <div key={row.label} className="flex justify-between">
-                    <span style={{ color: "#6E6E73" }}>{row.label}</span>
-                    <span className="font-medium" style={{ color: "#1D1D1F" }}>{row.value}</span>
-                  </div>
-                ))}
-                <div className="flex justify-between pt-3 border-t" style={{ borderColor: "#E5E5E5" }}>
-                  <span style={{ color: "#6E6E73" }}>Total</span>
-                  <div className="text-right">
-                    <span className="font-bold" style={{ color: "#1D1D1F" }}>$4.99</span>
-                    <p className="text-xs font-medium" style={{ color: "#F97316" }}>goes to dog charity 🐾</p>
-                  </div>
-                </div>
-              </div>
+            <div className="mb-10">
+              <label className="block font-semibold mb-2" style={{ fontSize: "16px", color: "#1D1D1F" }}>
+                Anything the AI should get right?
+              </label>
+              <p className="text-sm mb-3" style={{ color: "#A1A1AA" }}>
+                e.g. &ldquo;very short stubby tail&rdquo; or &ldquo;white patch over one eye&rdquo;
+              </p>
+              <textarea
+                value={details}
+                onChange={(e) => setDetails(e.target.value)}
+                rows={3}
+                placeholder="Optional — but this is what fixes anything the AI gets wrong"
+                className="w-full rounded-xl px-4 py-4 outline-none border-2"
+                style={{
+                  fontSize: "17px",
+                  background: "#FFFFFF",
+                  borderColor: "#E5E5E5",
+                  color: "#1D1D1F",
+                  lineHeight: 1.5,
+                  resize: "vertical",
+                }}
+                onFocus={(e) => (e.target.style.borderColor = "#1D1D1F")}
+                onBlur={(e) => (e.target.style.borderColor = "#E5E5E5")}
+              />
             </div>
 
-            <div className="flex gap-3">
+            <div className="mb-10">
+              <label className="block font-semibold mb-3" style={{ fontSize: "16px", color: "#1D1D1F" }}>
+                Pick an adventure
+              </label>
+              <ThemePicker selected={theme} onSelect={setTheme} />
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
-                onClick={() => setStep("upload")}
-                className="flex-1 font-semibold py-4 rounded-2xl border-2"
+                onClick={() => setStep(1)}
+                className="btn-large flex-1 rounded-2xl border-2"
                 style={{ borderColor: "#E5E5E5", color: "#6E6E73", background: "#FFFFFF" }}
               >
                 ← Back
               </button>
               <button
-                onClick={handleStartProcessing}
-                className="flex-[2] font-semibold py-4 rounded-2xl text-lg"
-                style={{ background: "#F97316", color: "#FFFFFF" }}
+                onClick={goToPreview}
+                className="btn-large flex-[2] rounded-2xl"
+                style={{ background: "#1D1D1F", color: "#FFFFFF" }}
               >
-                Create Video ✨
+                {retryUsed ? "See the new preview →" : "See the preview →"}
               </button>
             </div>
           </div>
         )}
 
-        {step === "processing" && (
-          <ProcessingStatus
-            stage={processingStage}
-            progress={progress}
-            error={error || undefined}
-            cartoonPreviewUrl={cartoonPreview}
-            onRetry={() => { setStep("customize"); setError(null); }}
-          />
+        {step === 3 && (
+          <div>
+            <h1
+              className="font-bold mb-3"
+              style={{ fontSize: "clamp(28px,5vw,38px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
+            >
+              Here&apos;s a first look
+            </h1>
+            <p className="mb-8" style={{ fontSize: "17px", color: "#6E6E73", lineHeight: 1.6 }}>
+              Three scenes from {displayName}&apos;s {ADVENTURE_THEMES.find((t) => t.id === theme)?.label.toLowerCase()}{" "}
+              adventure — approve them before we charge you anything.
+            </p>
+
+            {isLoadingPreview ? (
+              <div className="text-center py-20">
+                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: "#6E6E73" }} />
+                <p style={{ color: "#6E6E73" }}>Generating {displayName}&apos;s cartoon scenes…</p>
+              </div>
+            ) : (
+              <PreviewGate
+                stills={stills}
+                petName={petName}
+                onApprove={handleApprovePreview}
+                onRetry={handleRetryPreview}
+                retryUsed={retryUsed}
+              />
+            )}
+          </div>
         )}
 
-        {step === "result" && videoUrl && (
-          <div>
-            <div className="text-center mb-10">
-              <h1
-                className="font-bold mb-3"
-                style={{ fontSize: "clamp(28px,5vw,38px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
-              >
-                {dogName ? `${dogName}'s adventure` : "Your pup's adventure"} is ready!
-              </h1>
-              <p style={{ color: "#6E6E73" }}>Your custom Dog TV video is ready to watch and share</p>
+        {step === 4 && (
+          <div className="max-w-xl mx-auto">
+            <h1
+              className="font-bold mb-3"
+              style={{ fontSize: "clamp(28px,5vw,38px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
+            >
+              Almost there
+            </h1>
+            <p className="mb-8" style={{ fontSize: "17px", color: "#6E6E73", lineHeight: 1.6 }}>
+              One payment, one YouTube connection, and you choose who can watch.
+            </p>
+
+            <div className="rounded-2xl p-6 mb-6 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+              <h3 className="font-semibold mb-4" style={{ color: "#1D1D1F" }}>Order summary</h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span style={{ color: "#6E6E73" }}>Dog</span>
+                  <span className="font-medium" style={{ color: "#1D1D1F" }}>{displayName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span style={{ color: "#6E6E73" }}>Adventure</span>
+                  <span className="font-medium" style={{ color: "#1D1D1F" }}>
+                    {ADVENTURE_THEMES.find((t) => t.id === theme)?.label}
+                  </span>
+                </div>
+                <div className="flex justify-between pt-3 border-t" style={{ borderColor: "#E5E5E5" }}>
+                  <span style={{ color: "#6E6E73" }}>Total</span>
+                  <div className="text-right">
+                    <span className="font-bold" style={{ color: "#1D1D1F" }}>$4.99</span>
+                    <p className="text-xs font-medium" style={{ color: "#F97316" }}>most of this funds dog rescues</p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <VideoPlayer videoUrl={videoUrl} dogName={dogName} />
-            <div className="text-center mt-10">
-              <p className="text-sm font-medium mb-3" style={{ color: "#F97316" }}>
-                🐾 Thank you! Your purchase helps dogs in need.
+
+            <div className="rounded-2xl p-6 mb-6 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+              <h3 className="font-semibold mb-2" style={{ color: "#1D1D1F" }}>Payment</h3>
+              <p className="text-sm mb-4" style={{ color: "#6E6E73" }}>
+                This is a live demo — no card will ever be charged here.
               </p>
-              <Link href="/create" className="text-sm" style={{ color: "#A1A1AA" }}>
-                Create another adventure →
-              </Link>
+              <button
+                disabled
+                className="btn-large w-full rounded-2xl cursor-not-allowed"
+                style={{ background: "#E5E5E5", color: "#9CA3AF" }}
+              >
+                Pay $4.99 — Demo mode
+              </button>
             </div>
+
+            <div className="rounded-2xl p-6 mb-6 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+              <h3 className="font-semibold mb-2" style={{ color: "#1D1D1F" }}>Connect your YouTube account</h3>
+              <p className="text-sm mb-4" style={{ color: "#6E6E73", lineHeight: 1.6 }}>
+                This is the whole trick: once you connect your account, every new episode shows up
+                on your dog&apos;s own YouTube channel by itself. No files, no apps, nothing to remember.
+              </p>
+              {youtubeConnected ? (
+                <div
+                  className="flex items-center gap-2 rounded-xl px-4 py-3"
+                  style={{ background: "#ECFDF5", color: "#047857" }}
+                >
+                  <Check className="w-5 h-5" />
+                  <span className="text-sm font-medium">Connected as {youtubeChannelName}</span>
+                </div>
+              ) : (
+                <button
+                  onClick={handleConnectYoutube}
+                  disabled={isConnectingYoutube}
+                  className="btn-large w-full rounded-2xl flex items-center justify-center gap-2"
+                  style={{ background: "#FF0000", color: "#FFFFFF" }}
+                >
+                  {isConnectingYoutube ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Tv className="w-5 h-5" />
+                  )}
+                  {isConnectingYoutube ? "Connecting…" : "Connect YouTube"}
+                </button>
+              )}
+            </div>
+
+            <div className="rounded-2xl p-6 mb-8 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+              <h3 className="font-semibold mb-1" style={{ color: "#1D1D1F" }}>Who can watch?</h3>
+              <p className="text-sm mb-5" style={{ color: "#6E6E73" }}>
+                You can change this later. It only affects this episode.
+              </p>
+              <PrivacyPicker selected={privacy} onSelect={setPrivacy} />
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => setStep(3)}
+                className="btn-large flex-1 rounded-2xl border-2"
+                style={{ borderColor: "#E5E5E5", color: "#6E6E73", background: "#FFFFFF" }}
+              >
+                ← Back
+              </button>
+              <button
+                onClick={handleFinishDemoCheckout}
+                disabled={!youtubeConnected || isFinishing}
+                className="btn-large flex-[2] rounded-2xl"
+                style={{
+                  background: !youtubeConnected || isFinishing ? "#E5E5E5" : "#1D1D1F",
+                  color: !youtubeConnected || isFinishing ? "#9CA3AF" : "#FFFFFF",
+                  cursor: !youtubeConnected || isFinishing ? "not-allowed" : "pointer",
+                }}
+              >
+                {isFinishing
+                  ? "Finishing up…"
+                  : youtubeConnected
+                  ? "Complete demo order →"
+                  : "Connect YouTube to continue"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 5 && (
+          <div className="max-w-xl mx-auto text-center">
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
+              style={{ background: "#ECFDF5" }}
+            >
+              <Check className="w-8 h-8" style={{ color: "#10B981" }} />
+            </div>
+            <h1
+              className="font-bold mb-3"
+              style={{ fontSize: "clamp(28px,5vw,38px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
+            >
+              {displayName}&apos;s episode is on its way
+            </h1>
+            <p className="mb-10" style={{ fontSize: "17px", color: "#6E6E73", lineHeight: 1.6 }}>
+              {displayName}&apos;s episode will appear on your YouTube channel in about{" "}
+              {confirmEta} minutes. Here&apos;s a sample of what a finished PupTV episode looks like:
+            </p>
+
+            <YouTubeEmbed videoId={confirmVideoId} title={`${displayName}'s sample episode`} />
+
+            <div className="rounded-2xl p-6 mt-8 mb-8 border text-left" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+              <h3 className="font-semibold mb-3" style={{ color: "#1D1D1F" }}>How to watch on your TV</h3>
+              <ol className="space-y-2 text-sm" style={{ color: "#6E6E73", lineHeight: 1.7 }}>
+                <li>1. Open the YouTube app on your TV — most smart TVs already have it.</li>
+                <li>2. Sign in with the same Google account you just connected.</li>
+                <li>3. Look under &ldquo;Your channels&rdquo; for {displayName}&apos;s channel.</li>
+              </ol>
+            </div>
+
+            <p className="text-sm font-medium mb-6" style={{ color: "#F97316" }}>
+              🐾 Thank you — most of what you paid funds dog rescues.
+            </p>
+
+            <button
+              onClick={resetFlow}
+              className="btn-large rounded-2xl px-10"
+              style={{ background: "#1D1D1F", color: "#FFFFFF" }}
+            >
+              Create another episode
+            </button>
           </div>
         )}
       </main>
     </div>
   );
-}
-
-async function compressImage(file: File, maxDimension: number = 768): Promise<string> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    const objectUrl = URL.createObjectURL(file);
-    img.onload = () => {
-      URL.revokeObjectURL(objectUrl);
-      let { width, height } = img;
-      if (width > maxDimension || height > maxDimension) {
-        if (width >= height) {
-          height = Math.round((height * maxDimension) / width);
-          width = maxDimension;
-        } else {
-          width = Math.round((width * maxDimension) / height);
-          height = maxDimension;
-        }
-      }
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.readAsDataURL(file);
-        return;
-      }
-      ctx.drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL("image/jpeg", 0.85));
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.readAsDataURL(file);
-    };
-    img.src = objectUrl;
-  });
 }

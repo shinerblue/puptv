@@ -8,10 +8,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PupTV - Cartoon Adventures Starring YOUR Dog",
+  title: "PupTV — Your dog's own TV show, on your TV",
   description:
-    "Upload your dog's photos and watch AI create personalized cartoon adventure videos. Every purchase supports dog charities.",
-  keywords: ["dog tv", "pet video", "cartoon dog", "AI video", "dog charity"],
+    "Upload a few photos of your dog and get a cartoon adventure series that publishes straight to your YouTube channel — automatically. Dogs first, cats coming soon. Proceeds fund dog rescues.",
+  keywords: ["dog tv", "pet video", "cartoon dog", "AI video", "dog charity", "youtube", "pet tv"],
 };
 
 export default function RootLayout({

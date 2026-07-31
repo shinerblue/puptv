@@ -1,9 +1,36 @@
 import Link from "next/link";
+import { PawPrint, Tv, Heart } from "lucide-react";
+
+const VALUE_PROPS = [
+  {
+    Icon: PawPrint,
+    title: "Stars your dog",
+    desc:
+      "Our AI keeps your dog's actual face, coat, and markings — not a generic cartoon dog. Every episode is really them.",
+  },
+  {
+    Icon: Tv,
+    title: "Shows up on your TV — automatically",
+    desc:
+      "Connect YouTube once. New episodes publish straight to your dog's own channel. No downloads, no uploads, no files to manage — it just works on any TV.",
+  },
+  {
+    Icon: Heart,
+    title: "Proceeds fund dog rescues",
+    desc:
+      "Most of what you pay covers production. What's left funds dog rescue organizations — and we publish the running numbers below.",
+  },
+];
+
+const LEDGER_STATS = [
+  { label: "Episodes created", value: "128" },
+  { label: "Raised for rescues", value: "$384" },
+  { label: "Shelters funded", value: "6" },
+];
 
 export default function HomePage() {
   return (
     <div className="min-h-screen" style={{ background: "#FAFAFA" }}>
-      {/* Nav */}
       <nav
         className="sticky top-0 z-50 border-b"
         style={{
@@ -15,7 +42,6 @@ export default function HomePage() {
       >
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xl">🐾</span>
             <span className="font-bold text-xl tracking-tight" style={{ color: "#1D1D1F" }}>
               PupTV
             </span>
@@ -24,8 +50,8 @@ export default function HomePage() {
             <a href="#how-it-works" className="text-sm" style={{ color: "#6E6E73" }}>
               How it works
             </a>
-            <a href="#mission" className="text-sm" style={{ color: "#6E6E73" }}>
-              Mission
+            <a href="#ledger" className="text-sm" style={{ color: "#6E6E73" }}>
+              Impact ledger
             </a>
           </div>
           <Link
@@ -33,109 +59,76 @@ export default function HomePage() {
             className="text-sm font-semibold px-5 py-2.5 rounded-full"
             style={{ background: "#1D1D1F", color: "#FFFFFF" }}
           >
-            Create Video
+            Create your dog&apos;s show
           </Link>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="max-w-5xl mx-auto px-6 pt-24 pb-28 text-center">
+      <section className="max-w-5xl mx-auto px-6 pt-20 pb-24 text-center">
         <div
           className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-full mb-10 border"
-          style={{ background: "#FFF7ED", color: "#EA580C", borderColor: "#FED7AA" }}
+          style={{ background: "#FFFFFF", color: "#6E6E73", borderColor: "#E5E5E5" }}
         >
-          <span>🐕</span>
-          <span>100% of profits fund dog charities</span>
+          <span>Dogs first. Cats coming soon.</span>
         </div>
 
         <h1
           className="font-bold mb-6"
           style={{
-            fontSize: "clamp(48px, 8vw, 80px)",
+            fontSize: "clamp(40px, 7vw, 72px)",
             letterSpacing: "-0.03em",
             lineHeight: 1.05,
             color: "#1D1D1F",
           }}
         >
-          Your dog,
+          Your dog&apos;s own TV show.
           <br />
-          cartoon-ified.
+          On your TV.
         </h1>
 
         <p
           className="text-xl mb-12 mx-auto leading-relaxed"
-          style={{ color: "#6E6E73", maxWidth: "480px" }}
+          style={{ color: "#6E6E73", maxWidth: "560px" }}
         >
-          Upload your pup&apos;s photos. AI transforms them into an adorable
-          cartoon adventure video — perfect Dog TV, made with love.
+          Upload a few photos. We turn your dog into the star of a cartoon adventure —
+          and it shows up on your YouTube channel automatically. No apps to install,
+          no files to manage.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Link
             href="/create"
-            className="font-semibold px-8 py-4 rounded-full text-lg inline-flex items-center gap-2"
-            style={{ background: "#1D1D1F", color: "#FFFFFF" }}
+            className="btn-large font-semibold px-8 py-4 rounded-full inline-flex items-center gap-2"
+            style={{ background: "#1D1D1F", color: "#FFFFFF", fontSize: "18px" }}
           >
-            Upload Photos &amp; Create
+            Create your dog&apos;s show
             <span>→</span>
           </Link>
           <span className="text-sm" style={{ color: "#A1A1AA" }}>
-            $4.99 · proceeds go to charity
+            $4.99 to start · see the preview before you pay
           </span>
         </div>
       </section>
 
-      {/* How it works */}
       <section
-        id="how-it-works"
-        className="border-y py-24"
+        className="border-y py-20"
         style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}
       >
         <div className="max-w-5xl mx-auto px-6">
-          <h2
-            className="font-bold text-center mb-4"
-            style={{ fontSize: "clamp(28px, 4vw, 40px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
-          >
-            How it works
-          </h2>
-          <p className="text-center mb-16" style={{ color: "#6E6E73" }}>
-            Three steps to a cartoon adventure
-          </p>
-
-          <div className="grid md:grid-cols-3 gap-16">
-            {[
-              {
-                num: "01",
-                emoji: "📸",
-                title: "Upload photos",
-                desc: "Share 1–5 photos of your dog. Different angles help the AI learn their unique look.",
-              },
-              {
-                num: "02",
-                emoji: "🎨",
-                title: "AI creates magic",
-                desc: "Our AI transforms your pup into an adorable cartoon character in just a few minutes.",
-              },
-              {
-                num: "03",
-                emoji: "📺",
-                title: "Watch on loop",
-                desc: "Download a personalized adventure video to play on your TV while your dog relaxes.",
-              },
-            ].map((step) => (
-              <div key={step.num}>
-                <span
-                  className="block text-xs font-mono mb-5"
-                  style={{ color: "#D4D4D4", letterSpacing: "0.1em" }}
+          <div className="grid md:grid-cols-3 gap-10">
+            {VALUE_PROPS.map(({ Icon, title, desc }) => (
+              <div key={title}>
+                <div
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
+                  style={{ background: "#F5F5F5" }}
                 >
-                  {step.num}
-                </span>
-                <span className="text-4xl block mb-4">{step.emoji}</span>
-                <h3 className="text-lg font-semibold mb-2" style={{ color: "#1D1D1F" }}>
-                  {step.title}
+                  <Icon className="w-6 h-6" style={{ color: "#F97316" }} />
+                </div>
+                <h3 className="font-semibold mb-2" style={{ fontSize: "19px", color: "#1D1D1F" }}>
+                  {title}
                 </h3>
                 <p className="leading-relaxed text-sm" style={{ color: "#6E6E73" }}>
-                  {step.desc}
+                  {desc}
                 </p>
               </div>
             ))}
@@ -143,101 +136,127 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Why PupTV */}
-      <section className="py-24 max-w-5xl mx-auto px-6">
+      <section id="how-it-works" className="py-20 max-w-5xl mx-auto px-6">
         <h2
-          className="font-bold text-center mb-16"
+          className="font-bold text-center mb-4"
           style={{ fontSize: "clamp(28px, 4vw, 40px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
         >
-          Made for dogs who deserve better
+          How it works
         </h2>
+        <p className="text-center mb-16" style={{ color: "#6E6E73" }}>
+          Five minutes to set up. Every episode after that is automatic.
+        </p>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-3 gap-16">
           {[
             {
-              emoji: "🎬",
-              label: "Personalized",
-              title: "Stars YOUR dog",
-              desc: "Not generic stock footage — a cartoon made from your actual pup's photos.",
+              num: "01",
+              title: "Upload photos, add a detail",
+              desc: "1–5 photos, your dog's name and breed, and anything the AI should get right — like a short tail or a white patch.",
             },
             {
-              emoji: "🐾",
-              label: "Nonprofit",
-              title: "Helps dogs in need",
-              desc: "Every video you create donates to rescue shelters and dog charities.",
+              num: "02",
+              title: "Approve the preview",
+              desc: "See three cartoon scenes of your dog before you pay a cent. Not quite right? One free fix.",
             },
             {
-              emoji: "✨",
-              label: "AI-powered",
-              title: "Professional quality",
-              desc: "State-of-the-art AI turns ordinary photos into polished cartoon adventures.",
+              num: "03",
+              title: "Connect YouTube, once",
+              desc: "After that, every new episode publishes straight to your dog's channel — open the TV and it's just there.",
             },
-            {
-              emoji: "🔁",
-              label: "Dog TV",
-              title: "Loops forever",
-              desc: "A calming, engaging video your dog can watch on the TV while you're away.",
-            },
-          ].map((card) => (
-            <div
-              key={card.title}
-              className="rounded-2xl p-8 border"
-              style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}
-            >
-              <span className="text-3xl block mb-4">{card.emoji}</span>
+          ].map((step) => (
+            <div key={step.num}>
               <span
-                className="text-xs font-semibold uppercase tracking-widest block mb-2"
-                style={{ color: "#F97316", letterSpacing: "0.1em" }}
+                className="block text-xs font-mono mb-5"
+                style={{ color: "#D4D4D4", letterSpacing: "0.1em" }}
               >
-                {card.label}
+                {step.num}
               </span>
               <h3 className="text-lg font-semibold mb-2" style={{ color: "#1D1D1F" }}>
-                {card.title}
+                {step.title}
               </h3>
-              <p className="text-sm leading-relaxed" style={{ color: "#6E6E73" }}>
-                {card.desc}
+              <p className="leading-relaxed text-sm" style={{ color: "#6E6E73" }}>
+                {step.desc}
               </p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Mission */}
-      <section id="mission" className="pb-24 max-w-5xl mx-auto px-6">
+      <section id="ledger" className="pb-20 max-w-5xl mx-auto px-6">
+        <div
+          className="rounded-3xl p-10 md:p-16 border"
+          style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}
+        >
+          <div className="text-center mb-12">
+            <div
+              className="inline-flex items-center gap-2 text-xs font-semibold uppercase px-3 py-1.5 rounded-full mb-5"
+              style={{ background: "#F5F5F5", color: "#6E6E73", letterSpacing: "0.08em" }}
+            >
+              Sample data
+            </div>
+            <h2
+              className="font-bold mb-4"
+              style={{ fontSize: "clamp(28px, 4vw, 40px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
+            >
+              A public, running ledger
+            </h2>
+            <p className="mx-auto leading-relaxed" style={{ color: "#6E6E73", maxWidth: "520px" }}>
+              Every video sold, every dollar donated, every shelter funded — published openly.
+              The numbers below are illustrative; the real ledger goes live with our first customers.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {LEDGER_STATS.map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-2xl p-8 text-center border"
+                style={{ background: "#FAFAFA", borderColor: "#E5E5E5" }}
+              >
+                <div className="font-bold mb-2" style={{ fontSize: "40px", color: "#1D1D1F", letterSpacing: "-0.02em" }}>
+                  {stat.value}
+                </div>
+                <div className="text-sm" style={{ color: "#6E6E73" }}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="pb-24 max-w-5xl mx-auto px-6">
         <div
           className="rounded-3xl p-12 md:p-16 text-center border"
-          style={{ background: "#FFF7ED", borderColor: "#FED7AA" }}
+          style={{ background: "#1D1D1F", borderColor: "#1D1D1F" }}
         >
-          <span className="text-5xl block mb-6">🐕‍🦺</span>
           <h2
             className="font-bold mb-4"
-            style={{ fontSize: "clamp(28px, 4vw, 40px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
+            style={{ fontSize: "clamp(28px, 4vw, 40px)", letterSpacing: "-0.02em", color: "#FFFFFF" }}
           >
-            We&apos;re a nonprofit
+            Ready to see your dog on TV?
           </h2>
           <p
             className="text-lg mb-10 mx-auto leading-relaxed"
-            style={{ color: "#6E6E73", maxWidth: "520px" }}
+            style={{ color: "#A1A1AA", maxWidth: "480px" }}
           >
-            100% of proceeds go to dog rescue organizations and shelters after
-            modest operating costs. Every video helps a dog in need.
+            Upload a few photos and preview your dog&apos;s first episode for free —
+            you only pay once you like what you see.
           </p>
           <Link
             href="/create"
-            className="font-semibold px-8 py-4 rounded-full text-lg inline-block"
-            style={{ background: "#F97316", color: "#FFFFFF" }}
+            className="btn-large font-semibold px-8 py-4 rounded-full inline-block"
+            style={{ background: "#F97316", color: "#FFFFFF", fontSize: "18px" }}
           >
-            Create your first video →
+            Create your dog&apos;s show →
           </Link>
         </div>
       </section>
 
-      {/* Footer */}
       <footer
         className="border-t py-8 text-center text-sm"
         style={{ borderColor: "#E5E5E5", color: "#A1A1AA" }}
       >
-        © 2024 PupTV · A nonprofit adventure · Made with ❤️ for dog lovers
+        PupTV · Dogs first, cats coming soon · Proceeds fund dog rescues
       </footer>
     </div>
   );

@@ -1,10 +1,16 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { Upload, X } from "lucide-react";
+import { Upload, X, Loader2 } from "lucide-react";
+import { compressImageToJpeg } from "@/lib/compressImage";
+
+export interface CompressedPhoto {
+  file: File;
+  previewUrl: string;
+}
 
 interface PhotoUploaderProps {
-  onPhotosSelected: (files: File[]) => void;
+  onPhotosSelected: (photos: CompressedPhoto[]) => void;
   maxPhotos?: number;
 }
 
@@ -12,40 +18,57 @@ export default function PhotoUploader({
   onPhotosSelected,
   maxPhotos = 5,
 }: PhotoUploaderProps) {
-  const [previews, setPreviews] = useState<{ file: File; url: string }[]>([]);
+  const [photos, setPhotos] = useState<CompressedPhoto[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const addFiles = useCallback(
-    (files: FileList | File[]) => {
+    async (files: FileList | File[]) => {
       setError(null);
-      const newFiles = Array.from(files).filter((f) => f.type.startsWith("image/"));
-      if (newFiles.length === 0) {
-        setError("Please upload image files only (JPG, PNG, etc.)");
+      const incoming = Array.from(files).filter((f) => f.type.startsWith("image/"));
+      if (incoming.length === 0) {
+        setError("Please choose photo files only (JPG, PNG, HEIC).");
         return;
       }
-      const total = previews.length + newFiles.length;
-      if (total > maxPhotos) {
-        setError(`Maximum ${maxPhotos} photos allowed`);
+      if (photos.length + incoming.length > maxPhotos) {
+        setError(`You can upload up to ${maxPhotos} photos.`);
         return;
       }
-      const newPreviews = newFiles.map((file) => ({ file, url: URL.createObjectURL(file) }));
-      const updated = [...previews, ...newPreviews];
-      setPreviews(updated);
-      onPhotosSelected(updated.map((p) => p.file));
+
+      setIsCompressing(true);
+      try {
+        const compressed = await Promise.all(
+          incoming.map(async (file) => {
+            const { blob, dataUrl } = await compressImageToJpeg(file, 1024, 0.85);
+            const jpegFile = new File(
+              [blob],
+              file.name.replace(/\.\w+$/, "") + ".jpg",
+              { type: "image/jpeg" }
+            );
+            return { file: jpegFile, previewUrl: dataUrl };
+          })
+        );
+        const updated = [...photos, ...compressed];
+        setPhotos(updated);
+        onPhotosSelected(updated);
+      } catch {
+        setError("Couldn't process one of those photos. Please try a different file.");
+      } finally {
+        setIsCompressing(false);
+      }
     },
-    [previews, maxPhotos, onPhotosSelected]
+    [photos, maxPhotos, onPhotosSelected]
   );
 
   const removePhoto = useCallback(
     (index: number) => {
-      URL.revokeObjectURL(previews[index].url);
-      const updated = previews.filter((_, i) => i !== index);
-      setPreviews(updated);
-      onPhotosSelected(updated.map((p) => p.file));
+      const updated = photos.filter((_, i) => i !== index);
+      setPhotos(updated);
+      onPhotosSelected(updated);
     },
-    [previews, onPhotosSelected]
+    [photos, onPhotosSelected]
   );
 
   const handleDrop = useCallback(
@@ -65,6 +88,10 @@ export default function PhotoUploader({
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
+        role="button"
+        tabIndex={0}
+        aria-label="Upload photos of your dog"
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") inputRef.current?.click(); }}
       >
         <input
           ref={inputRef}
@@ -75,53 +102,63 @@ export default function PhotoUploader({
           onChange={(e) => e.target.files && addFiles(e.target.files)}
         />
         <div
-          className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4"
+          className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
           style={{ background: "#F5F5F5" }}
         >
-          <Upload className="w-5 h-5" style={{ color: "#6E6E73" }} />
+          {isCompressing ? (
+            <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#6E6E73" }} />
+          ) : (
+            <Upload className="w-6 h-6" style={{ color: "#6E6E73" }} />
+          )}
         </div>
-        <p className="font-semibold mb-1" style={{ color: "#1D1D1F" }}>
-          Drop your dog&apos;s photos here
+        <p className="font-semibold mb-1" style={{ fontSize: "18px", color: "#1D1D1F" }}>
+          {isCompressing ? "Preparing your photos…" : "Tap to add photos, or drop them here"}
         </p>
         <p className="text-sm" style={{ color: "#A1A1AA" }}>
-          or click to browse · up to {maxPhotos} photos · JPG, PNG
+          1 to {maxPhotos} photos of your dog · JPG or PNG
         </p>
       </div>
 
       {error && (
         <div
           className="flex items-center gap-2 text-sm rounded-xl px-4 py-3 border"
-          style={{ background: "#FEF2F2", color: "#EF4444", borderColor: "#FECACA" }}
+          style={{ background: "#FEF2F2", color: "#B91C1C", borderColor: "#FECACA" }}
         >
           <span>⚠</span>
           {error}
         </div>
       )}
 
-      {previews.length > 0 && (
+      {photos.length > 0 && (
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-          {previews.map((preview, i) => (
+          {photos.map((photo, i) => (
             <div
               key={i}
               className="relative group aspect-square rounded-xl overflow-hidden border"
               style={{ borderColor: "#E5E5E5" }}
             >
-              <img src={preview.url} alt={`Dog photo ${i + 1}`} className="w-full h-full object-cover" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={photo.previewUrl} alt={`Your dog, photo ${i + 1}`} className="w-full h-full object-cover" />
               <button
+                type="button"
                 onClick={(e) => { e.stopPropagation(); removePhoto(i); }}
-                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                aria-label={`Remove photo ${i + 1}`}
+                className="absolute top-1.5 right-1.5 w-8 h-8 rounded-full flex items-center justify-center"
                 style={{ background: "rgba(0,0,0,0.6)" }}
               >
-                <X className="w-3 h-3 text-white" />
+                <X className="w-4 h-4 text-white" />
               </button>
             </div>
           ))}
-          {previews.length < maxPhotos && (
+          {photos.length < maxPhotos && (
             <div
               className="aspect-square rounded-xl upload-zone flex flex-col items-center justify-center cursor-pointer gap-1"
               onClick={() => inputRef.current?.click()}
+              role="button"
+              tabIndex={0}
+              aria-label="Add another photo"
             >
-              <Upload className="w-4 h-4" style={{ color: "#A1A1AA" }} />
+              <Upload className="w-5 h-5" style={{ color: "#A1A1AA" }} />
               <span className="text-xs" style={{ color: "#A1A1AA" }}>Add more</span>
             </div>
           )}
