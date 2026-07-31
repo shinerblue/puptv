@@ -13,6 +13,7 @@ import {
   clearClipJob,
   orderedClipUrls,
   isLiveStillSet,
+  PredictionFailedError,
   type ClipJob,
 } from "@/lib/liveClient";
 import ThemePicker, { ADVENTURE_THEMES } from "@/components/ThemePicker";
@@ -29,6 +30,9 @@ import { PRICING_TIERS } from "@/lib/pricing";
 import { CHARITIES } from "@/lib/impact";
 
 const STEP_LABELS = ["Photos", "Details", "Preview", "Checkout", "Done"];
+
+/** Stay well under Vercel's 4.5MB request-body ceiling (data URIs are chars ≈ bytes). */
+const MAX_UPLOAD_BYTES = 3_800_000;
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -76,6 +80,7 @@ export default function CreatePage() {
   const [isConnectingYoutube, setIsConnectingYoutube] = useState(false);
 
   const [isFinishing, setIsFinishing] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [confirmEta, setConfirmEta] = useState(15);
   const [confirmVideoId, setConfirmVideoId] = useState("PIcIfIdC1kA");
 
@@ -110,6 +115,16 @@ export default function CreatePage() {
         .filter(Boolean)
         .join(". ");
       const photoData = photos.map((p) => p.previewUrl);
+      // Vercel rejects request bodies over 4.5MB at the platform edge, which
+      // surfaces as an opaque failure rather than one of our messages. The
+      // client already downscales to 1024px, but five dense photos can still
+      // clear the limit — catch it here with something the user can act on.
+      const payloadBytes = photoData.reduce((n, d) => n + d.length, 0);
+      if (payloadBytes > MAX_UPLOAD_BYTES) {
+        throw new Error(
+          "Those photos add up to more than we can send at once. Please remove one or two and try again."
+        );
+      }
       setPreviewProgress(`Warming up the art studio for ${name}…`);
       const first = await startGeneration(
         "/api/cartoonify",
@@ -184,14 +199,16 @@ export default function CreatePage() {
       clipRunActive.current = true;
       setClipPhase("generating");
       setClipError(null);
+      const job: ClipJob = loadClipJob() ?? {
+        petName: name,
+        theme: themeId,
+        stills: liveStills,
+        predictionIds: {},
+        clipUrls: {},
+        createdAt: Date.now(),
+      };
+      let failedScene: number | null = null;
       try {
-        const job: ClipJob = loadClipJob() ?? {
-          petName: name,
-          theme: themeId,
-          stills: liveStills,
-          predictionIds: {},
-          clipUrls: {},
-        };
         saveClipJob(job);
         for (let scene = 0; scene < 3; scene++) {
           setClipScene(scene);
@@ -199,6 +216,7 @@ export default function CreatePage() {
             setClipUrls(orderedClipUrls(job));
             continue;
           }
+          failedScene = scene;
           let predictionId = job.predictionIds[scene];
           if (!predictionId) {
             const started = await startGeneration(
@@ -225,8 +243,17 @@ export default function CreatePage() {
           saveClipJob(job);
           setClipUrls(orderedClipUrls(job));
         }
+        failedScene = null;
         setClipPhase("done");
       } catch (err) {
+        // A terminally failed prediction never changes state, so keeping
+        // its id would make "Resume animating" re-poll a dead job forever.
+        // Drop just that scene's id — finished scenes keep their URLs, so
+        // the retry never re-renders (or re-bills) work already done.
+        if (err instanceof PredictionFailedError && failedScene !== null) {
+          delete job.predictionIds[failedScene];
+          saveClipJob(job);
+        }
         setClipError(
           err instanceof Error ? err.message : "Something went wrong animating the episode."
         );
@@ -240,6 +267,13 @@ export default function CreatePage() {
   );
 
   // Resume an in-flight (or finished) clip run after a reload / tab return.
+  //
+  // This has to stay in an effect: /create is prerendered, so seeding these
+  // from sessionStorage in a lazy useState initializer would make the client's
+  // first render disagree with the server HTML and blow up hydration. Reading
+  // browser-only storage after mount and then syncing state is the intended
+  // pattern; the cascading render it causes happens once, on resume only.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const job = loadClipJob();
     if (!job) return;
@@ -255,6 +289,7 @@ export default function CreatePage() {
       void runClipGeneration(job.stills, job.petName, job.theme);
     }
   }, [runClipGeneration]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleApprovePreview = () => setStep(4);
 
@@ -265,11 +300,17 @@ export default function CreatePage() {
 
   const handleConnectYoutube = async () => {
     setIsConnectingYoutube(true);
+    setCheckoutError(null);
     try {
       const res = await fetch("/api/connect-youtube", { method: "POST" });
-      const data = await res.json();
+      const data = (await res.json().catch(() => ({}))) as { channelName?: string };
+      if (!res.ok) throw new Error("Connect failed");
       setYoutubeConnected(true);
       setYoutubeChannelName(data.channelName || "Demo Channel");
+    } catch {
+      // Without this the button just quietly re-enabled and the user was
+      // left guessing whether anything happened.
+      setCheckoutError("We couldn't reach YouTube just then. Please try connecting again.");
     } finally {
       setIsConnectingYoutube(false);
     }
@@ -277,6 +318,7 @@ export default function CreatePage() {
 
   const handleFinishDemoCheckout = async () => {
     setIsFinishing(true);
+    setCheckoutError(null);
     try {
       await fetch("/api/checkout", { method: "POST" });
       if (isLiveStillSet(stills)) {
@@ -304,18 +346,28 @@ export default function CreatePage() {
           secondPet: hasSecondPet ? { name: pet2Name, breed: pet2Breed, details: pet2Details } : null,
         }),
       });
-      const data = await res.json();
+      const data = (await res.json().catch(() => ({}))) as {
+        etaMinutes?: number;
+        sampleYoutubeVideoId?: string;
+      };
       setConfirmEta(data.etaMinutes ?? 15);
       setConfirmVideoId(data.sampleYoutubeVideoId || "PIcIfIdC1kA");
       setStep(5);
+    } catch {
+      setCheckoutError(
+        "Something went wrong finishing your order. Nothing was charged — please try again."
+      );
     } finally {
       setIsFinishing(false);
     }
   };
 
   const handleCopyLink = async () => {
-    const slug = (petName || "dutch").toLowerCase().replace(/[^a-z0-9]+/g, "-");
-    const url = `https://puptv.vercel.app/watch/${slug}`;
+    // The old value pointed at /watch/<slug>, which is not a route on this
+    // deployment — the "Link copied!" toast handed the user a 404. Share a
+    // link that actually resolves: the finished clip in live mode, the
+    // sample episode in demo mode.
+    const url = clipUrls[0] ?? `https://www.youtube.com/watch?v=${confirmVideoId}`;
     try {
       await navigator.clipboard.writeText(url);
     } catch {
@@ -348,6 +400,7 @@ export default function CreatePage() {
     setYoutubeChannelName("");
     setCopyState("idle");
     setShowShareModal(false);
+    setCheckoutError(null);
     clearClipJob();
     setClipPhase("none");
     setClipUrls([]);
@@ -389,14 +442,14 @@ export default function CreatePage() {
                       className="step-dot"
                       style={{
                         background: isComplete ? "#10B981" : isActive ? "#1D1D1F" : "#E5E5E5",
-                        color: isComplete || isActive ? "#FFFFFF" : "#9CA3AF",
+                        color: isComplete || isActive ? "#FFFFFF" : "#52525B",
                       }}
                     >
                       {isComplete ? <Check className="w-4 h-4" /> : idx}
                     </div>
                     <span
                       className="text-sm hidden md:inline"
-                      style={{ color: isActive ? "#1D1D1F" : "#9CA3AF", fontWeight: isActive ? 600 : 400 }}
+                      style={{ color: isActive ? "#1D1D1F" : "#6E6E73", fontWeight: isActive ? 600 : 400 }}
                     >
                       {label}
                     </span>
@@ -476,10 +529,13 @@ export default function CreatePage() {
             </p>
 
             <div className="mb-6">
-              <label className="block font-semibold mb-2" style={{ fontSize: "16px", color: "#1D1D1F" }}>
+              <label htmlFor="pet-name" className="block font-semibold mb-2" style={{ fontSize: "16px", color: "#1D1D1F" }}>
                 Dog&apos;s name
               </label>
               <input
+                id="pet-name"
+                name="petName"
+                autoComplete="off"
                 type="text"
                 value={petName}
                 onChange={(e) => setPetName(e.target.value)}
@@ -492,10 +548,13 @@ export default function CreatePage() {
             </div>
 
             <div className="mb-6">
-              <label className="block font-semibold mb-2" style={{ fontSize: "16px", color: "#1D1D1F" }}>
+              <label htmlFor="pet-breed" className="block font-semibold mb-2" style={{ fontSize: "16px", color: "#1D1D1F" }}>
                 Breed (or your best guess)
               </label>
               <input
+                id="pet-breed"
+                name="breed"
+                autoComplete="off"
                 type="text"
                 value={breed}
                 onChange={(e) => setBreed(e.target.value)}
@@ -508,13 +567,16 @@ export default function CreatePage() {
             </div>
 
             <div className="mb-8">
-              <label className="block font-semibold mb-2" style={{ fontSize: "16px", color: "#1D1D1F" }}>
+              <label htmlFor="pet-details" className="block font-semibold mb-2" style={{ fontSize: "16px", color: "#1D1D1F" }}>
                 Anything the AI should get right?
               </label>
-              <p className="text-sm mb-3" style={{ color: "#A1A1AA" }}>
+              <p id="pet-details-hint" className="text-sm mb-3" style={{ color: "#6E6E73" }}>
                 e.g. &ldquo;very short stubby tail&rdquo; or &ldquo;white patch over one eye&rdquo;
               </p>
               <textarea
+                id="pet-details"
+                name="details"
+                aria-describedby="pet-details-hint"
                 value={details}
                 onChange={(e) => setDetails(e.target.value)}
                 rows={3}
@@ -562,10 +624,13 @@ export default function CreatePage() {
                   </button>
                 </div>
                 <div className="mb-4">
-                  <label className="block font-semibold mb-2" style={{ fontSize: "15px", color: "#1D1D1F" }}>
-                    Dog&apos;s name
+                  <label htmlFor="pet2-name" className="block font-semibold mb-2" style={{ fontSize: "15px", color: "#1D1D1F" }}>
+                    Second dog&apos;s name
                   </label>
                   <input
+                    id="pet2-name"
+                    name="pet2Name"
+                    autoComplete="off"
                     type="text"
                     value={pet2Name}
                     onChange={(e) => setPet2Name(e.target.value)}
@@ -575,10 +640,13 @@ export default function CreatePage() {
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block font-semibold mb-2" style={{ fontSize: "15px", color: "#1D1D1F" }}>
-                    Breed
+                  <label htmlFor="pet2-breed" className="block font-semibold mb-2" style={{ fontSize: "15px", color: "#1D1D1F" }}>
+                    Second dog&apos;s breed
                   </label>
                   <input
+                    id="pet2-breed"
+                    name="pet2Breed"
+                    autoComplete="off"
                     type="text"
                     value={pet2Breed}
                     onChange={(e) => setPet2Breed(e.target.value)}
@@ -588,10 +656,12 @@ export default function CreatePage() {
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-2" style={{ fontSize: "15px", color: "#1D1D1F" }}>
-                    Anything the AI should get right?
+                  <label htmlFor="pet2-details" className="block font-semibold mb-2" style={{ fontSize: "15px", color: "#1D1D1F" }}>
+                    Anything the AI should get right about them?
                   </label>
                   <textarea
+                    id="pet2-details"
+                    name="pet2Details"
                     value={pet2Details}
                     onChange={(e) => setPet2Details(e.target.value)}
                     rows={2}
@@ -600,23 +670,26 @@ export default function CreatePage() {
                     style={{ fontSize: "15px", background: "#FFFFFF", borderColor: "#E5E5E5", color: "#1D1D1F", resize: "vertical" }}
                   />
                 </div>
-                <p className="text-xs mt-3" style={{ color: "#A1A1AA" }}>Up to 2 pets for now.</p>
+                <p className="text-xs mt-3" style={{ color: "#6E6E73" }}>Up to 2 pets for now.</p>
               </div>
             )}
 
+            {/* These head groups of buttons, not single form controls, so they
+                are <div>s labelling the radiogroup via aria-labelledby rather
+                than <label>s pointing at nothing. */}
             <div className="mb-8">
-              <label className="block font-semibold mb-3" style={{ fontSize: "16px", color: "#1D1D1F" }}>
+              <div id="theme-label" className="block font-semibold mb-3" style={{ fontSize: "16px", color: "#1D1D1F" }}>
                 Pick an adventure
-              </label>
-              <ThemePicker selected={theme} onSelect={setTheme} />
+              </div>
+              <ThemePicker selected={theme} onSelect={setTheme} labelledBy="theme-label" />
             </div>
 
             <div className="mb-8">
-              <label className="block font-semibold mb-1" style={{ fontSize: "16px", color: "#1D1D1F" }}>
-                Special occasion? <span style={{ fontWeight: 400, color: "#A1A1AA" }}>(optional)</span>
-              </label>
-              <p className="text-sm mb-3" style={{ color: "#A1A1AA" }}>We&apos;ll work it into the adventure.</p>
-              <OccasionPicker selected={occasion} onSelect={setOccasion} />
+              <div id="occasion-label" className="block font-semibold mb-1" style={{ fontSize: "16px", color: "#1D1D1F" }}>
+                Special occasion? <span style={{ fontWeight: 400, color: "#6E6E73" }}>(optional)</span>
+              </div>
+              <p className="text-sm mb-3" style={{ color: "#6E6E73" }}>We&apos;ll work it into the adventure.</p>
+              <OccasionPicker selected={occasion} onSelect={setOccasion} labelledBy="occasion-label" />
             </div>
 
             {hasSecondPet && (
@@ -723,7 +796,7 @@ export default function CreatePage() {
                       ) : (
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
                           <span className="text-3xl paw-bounce">🐾</span>
-                          <span className="text-xs" style={{ color: "#A1A1AA" }}>
+                          <span className="text-xs" style={{ color: "#6E6E73" }}>
                             Scene {i + 1}
                           </span>
                         </div>
@@ -737,7 +810,7 @@ export default function CreatePage() {
                     {previewProgress ?? `Generating ${displayName}'s cartoon scenes…`}
                   </p>
                   {previewWaitMsg && (
-                    <p className="text-sm mt-2" style={{ color: "#A1A1AA" }}>
+                    <p className="text-sm mt-2" style={{ color: "#6E6E73" }}>
                       {previewWaitMsg}
                     </p>
                   )}
@@ -899,6 +972,16 @@ export default function CreatePage() {
               <PrivacyPicker selected={privacy} onSelect={setPrivacy} />
             </div>
 
+            {checkoutError && (
+              <div
+                role="alert"
+                className="rounded-2xl p-4 mb-6 border text-sm"
+                style={{ background: "#FEF2F2", borderColor: "#FECACA", color: "#B91C1C" }}
+              >
+                {checkoutError}
+              </div>
+            )}
+
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => setStep(3)}
@@ -983,23 +1066,46 @@ export default function CreatePage() {
             )}
 
             {clipPhase === "error" && (
-              <div
-                className="rounded-2xl p-8 border text-center"
-                style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}
-              >
-                <p className="font-semibold mb-2" style={{ color: "#1D1D1F" }}>
-                  The animation hit a snag
-                </p>
-                <p className="text-sm mb-6" style={{ color: "#6E6E73" }}>
-                  {clipError}
-                </p>
-                <button
-                  onClick={() => void runClipGeneration(stills, petName, theme)}
-                  className="btn-large rounded-2xl px-10"
-                  style={{ background: "#1D1D1F", color: "#FFFFFF" }}
+              <div>
+                <div
+                  role="alert"
+                  className="rounded-2xl p-8 border text-center mb-8"
+                  style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}
                 >
-                  Resume animating
-                </button>
+                  <p className="font-semibold mb-2" style={{ color: "#1D1D1F" }}>
+                    The animation hit a snag
+                  </p>
+                  <p className="text-sm mb-2" style={{ color: "#6E6E73" }}>
+                    {clipError}
+                  </p>
+                  <p className="text-sm mb-6" style={{ color: "#6E6E73" }}>
+                    {clipUrls.length > 0
+                      ? `Scene${clipUrls.length > 1 ? "s" : ""} ${clipUrls
+                          .map((_, i) => i + 1)
+                          .join(" and ")} finished and ${
+                          clipUrls.length > 1 ? "are" : "is"
+                        } safe — picking up again only redoes what's left.`
+                      : "Nothing has been charged. Picking up again starts fresh."}
+                  </p>
+                  <button
+                    onClick={() => void runClipGeneration(stills, petName, theme)}
+                    className="btn-large rounded-2xl px-10"
+                    style={{ background: "#1D1D1F", color: "#FFFFFF" }}
+                  >
+                    Resume animating
+                  </button>
+                </div>
+
+                {/* Don't strand the finished scenes behind the error — the
+                    URLs expire in about an hour, so show them right away. */}
+                {clipUrls.length > 0 && (
+                  <div>
+                    <p className="text-sm mb-3 text-center" style={{ color: "#6E6E73" }}>
+                      What&apos;s ready so far:
+                    </p>
+                    <EpisodePlayer clips={clipUrls} petName={displayName} />
+                  </div>
+                )}
               </div>
             )}
 
@@ -1026,9 +1132,37 @@ export default function CreatePage() {
 
                 <EpisodePlayer clips={clipUrls} petName={displayName} />
 
-                <p className="text-sm mt-4 text-center" style={{ color: "#A1A1AA" }}>
+                <p className="text-sm mt-4 text-center" style={{ color: "#6E6E73" }}>
                   Download links stay fresh for about an hour — save your favorite scenes now.
                 </p>
+
+                {/* Parity with the demo confirmation: sharing and the poster
+                    offer were previously only reachable in demo mode. */}
+                <div className="rounded-2xl p-6 mt-8 border text-left" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+                  <h3 className="font-semibold mb-4" style={{ color: "#1D1D1F" }}>Share {displayName}&apos;s episode</h3>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={handleCopyLink}
+                      className="rounded-2xl border-2 flex items-center justify-center gap-2 flex-1"
+                      style={{ borderColor: "#E5E5E5", color: "#1D1D1F", background: "#FFFFFF", fontSize: "15px", minHeight: "48px", fontWeight: 600 }}
+                    >
+                      <Copy className="w-4 h-4" />
+                      {copyState === "copied" ? "Link copied!" : "Copy link"}
+                    </button>
+                    <button
+                      onClick={() => setShowShareModal(true)}
+                      className="rounded-2xl border-2 flex items-center justify-center gap-2 flex-1"
+                      style={{ borderColor: "#E5E5E5", color: "#1D1D1F", background: "#FFFFFF", fontSize: "15px", minHeight: "48px", fontWeight: 600 }}
+                    >
+                      <Send className="w-4 h-4" />
+                      Send to another TV
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-6 text-left">
+                  <PosterCard petName={displayName} />
+                </div>
 
                 <p className="text-sm font-medium mt-8 mb-1 text-center" style={{ color: "#F97316" }}>
                   🐾 Thank you — part of every real order goes to a dog rescue.
