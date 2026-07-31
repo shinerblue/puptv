@@ -1,9 +1,20 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Tv, Check, Copy, Send, Moon } from "lucide-react";
 import PhotoUploader, { CompressedPhoto } from "@/components/PhotoUploader";
+import EpisodePlayer from "@/components/EpisodePlayer";
+import {
+  startGeneration,
+  pollPrediction,
+  loadClipJob,
+  saveClipJob,
+  clearClipJob,
+  orderedClipUrls,
+  isLiveStillSet,
+  type ClipJob,
+} from "@/lib/liveClient";
 import ThemePicker, { ADVENTURE_THEMES } from "@/components/ThemePicker";
 import OccasionPicker, { OCCASIONS } from "@/components/OccasionPicker";
 import PreviewGate from "@/components/PreviewGate";
@@ -43,6 +54,19 @@ export default function CreatePage() {
   const [retryUsed, setRetryUsed] = useState(false);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
 
+  // Live-generation state (only used when the server has a Replicate token).
+  const [liveNotice, setLiveNotice] = useState<string | null>(null);
+  const [previewProgress, setPreviewProgress] = useState<string | null>(null);
+  const [previewWaitMsg, setPreviewWaitMsg] = useState<string | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+
+  const [clipPhase, setClipPhase] = useState<"none" | "generating" | "done" | "error">("none");
+  const [clipUrls, setClipUrls] = useState<string[]>([]);
+  const [clipScene, setClipScene] = useState(0);
+  const [clipError, setClipError] = useState<string | null>(null);
+  const [clipWaitMsg, setClipWaitMsg] = useState<string | null>(null);
+  const clipRunActive = useRef(false);
+
   const [sku, setSku] = useState<string>("single");
   const [charity, setCharity] = useState<string>("choose-for-me");
 
@@ -67,21 +91,170 @@ export default function CreatePage() {
 
   const handlePhotosSelected = useCallback((p: CompressedPhoto[]) => setPhotos(p), []);
 
+  /**
+   * Generate the three preview stills. In live mode (server has a
+   * Replicate token) each scene is a real nano-banana-pro render: scene 0
+   * establishes the cartoon character from the photos, scenes 1-2 chain
+   * the scene-0 output back in so the character stays identical. In demo
+   * mode the server answers with sample stills in a single round trip.
+   */
   const goToPreview = useCallback(async () => {
     setStep(3);
     setIsLoadingPreview(true);
+    setPreviewError(null);
+    setLiveNotice(null);
+    setStills([]);
+    const name = petName.trim() || "your dog";
     try {
-      const res = await fetch("/api/cartoonify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ petName, breed, details, theme, occasion, calmMode }),
-      });
-      const data = await res.json();
-      setStills(data.stills || []);
+      const combinedDetails = [breed.trim() ? `Breed: ${breed.trim()}` : "", details.trim()]
+        .filter(Boolean)
+        .join(". ");
+      const photoData = photos.map((p) => p.previewUrl);
+      setPreviewProgress(`Warming up the art studio for ${name}…`);
+      const first = await startGeneration(
+        "/api/cartoonify",
+        {
+          photos: photoData,
+          petName,
+          breed,
+          details: combinedDetails,
+          theme,
+          occasion,
+          calmMode,
+          sceneIndex: 0,
+        },
+        setPreviewWaitMsg
+      );
+      if (first.demo || !first.predictionId) {
+        setStills(first.stills ?? []);
+        setLiveNotice(first.notice ?? null);
+        return;
+      }
+      const drawn: string[] = [];
+      let cartoonRefUrl: string | undefined;
+      for (let scene = 0; scene < 3; scene++) {
+        setPreviewProgress(`Drawing ${name}… scene ${scene + 1} of 3, about a minute`);
+        let predictionId: string;
+        if (scene === 0) {
+          predictionId = first.predictionId;
+        } else {
+          const next = await startGeneration(
+            "/api/cartoonify",
+            {
+              photos: photoData,
+              petName,
+              details: combinedDetails,
+              theme,
+              sceneIndex: scene,
+              cartoonRefUrl,
+            },
+            setPreviewWaitMsg
+          );
+          if (next.demo || !next.predictionId) {
+            throw new Error(next.notice || "Live generation paused mid-run. Please try again.");
+          }
+          predictionId = next.predictionId;
+        }
+        const url = await pollPrediction(predictionId, 5 * 60 * 1000);
+        drawn.push(url);
+        setStills([...drawn]);
+        if (scene === 0) cartoonRefUrl = url;
+      }
+    } catch (err) {
+      setStills([]);
+      setPreviewError(
+        err instanceof Error ? err.message : "Something went wrong. Please try again."
+      );
     } finally {
       setIsLoadingPreview(false);
+      setPreviewProgress(null);
+      setPreviewWaitMsg(null);
     }
-  }, [petName, breed, details, theme, occasion, calmMode]);
+  }, [photos, petName, breed, details, theme, occasion, calmMode]);
+
+  /**
+   * Animate the three approved stills into 5s clips, sequentially
+   * (~3-6 minutes each). Prediction ids and finished clip URLs are kept
+   * in sessionStorage so the run survives a reload or the user leaving
+   * the tab — on return we resume instead of paying for new renders.
+   */
+  const runClipGeneration = useCallback(
+    async (liveStills: string[], name: string, themeId: string) => {
+      if (clipRunActive.current) return;
+      clipRunActive.current = true;
+      setClipPhase("generating");
+      setClipError(null);
+      try {
+        const job: ClipJob = loadClipJob() ?? {
+          petName: name,
+          theme: themeId,
+          stills: liveStills,
+          predictionIds: {},
+          clipUrls: {},
+        };
+        saveClipJob(job);
+        for (let scene = 0; scene < 3; scene++) {
+          setClipScene(scene);
+          if (job.clipUrls[scene]) {
+            setClipUrls(orderedClipUrls(job));
+            continue;
+          }
+          let predictionId = job.predictionIds[scene];
+          if (!predictionId) {
+            const started = await startGeneration(
+              "/api/generate-video",
+              {
+                stillUrl: job.stills[scene],
+                petName: job.petName,
+                theme: job.theme,
+                sceneIndex: scene,
+              },
+              setClipWaitMsg
+            );
+            if (started.demo || !started.predictionId) {
+              throw new Error(
+                started.notice || "Live animation is paused for today. Please come back tomorrow."
+              );
+            }
+            predictionId = started.predictionId;
+            job.predictionIds[scene] = predictionId;
+            saveClipJob(job);
+          }
+          const url = await pollPrediction(predictionId, 15 * 60 * 1000);
+          job.clipUrls[scene] = url;
+          saveClipJob(job);
+          setClipUrls(orderedClipUrls(job));
+        }
+        setClipPhase("done");
+      } catch (err) {
+        setClipError(
+          err instanceof Error ? err.message : "Something went wrong animating the episode."
+        );
+        setClipPhase("error");
+      } finally {
+        clipRunActive.current = false;
+        setClipWaitMsg(null);
+      }
+    },
+    []
+  );
+
+  // Resume an in-flight (or finished) clip run after a reload / tab return.
+  useEffect(() => {
+    const job = loadClipJob();
+    if (!job) return;
+    const done = orderedClipUrls(job);
+    setPetName(job.petName);
+    setTheme(job.theme);
+    setStills(job.stills);
+    setClipUrls(done);
+    setStep(5);
+    if (done.length === 3) {
+      setClipPhase("done");
+    } else {
+      void runClipGeneration(job.stills, job.petName, job.theme);
+    }
+  }, [runClipGeneration]);
 
   const handleApprovePreview = () => setStep(4);
 
@@ -106,6 +279,14 @@ export default function CreatePage() {
     setIsFinishing(true);
     try {
       await fetch("/api/checkout", { method: "POST" });
+      if (isLiveStillSet(stills)) {
+        // Live mode: payment stays demo, but the clips are real.
+        clearClipJob();
+        setClipUrls([]);
+        setStep(5);
+        void runClipGeneration(stills, petName, theme);
+        return;
+      }
       const res = await fetch("/api/generate-video", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -167,6 +348,16 @@ export default function CreatePage() {
     setYoutubeChannelName("");
     setCopyState("idle");
     setShowShareModal(false);
+    clearClipJob();
+    setClipPhase("none");
+    setClipUrls([]);
+    setClipScene(0);
+    setClipError(null);
+    setClipWaitMsg(null);
+    setLiveNotice(null);
+    setPreviewError(null);
+    setPreviewProgress(null);
+    setPreviewWaitMsg(null);
   };
 
   return (
@@ -514,18 +705,81 @@ export default function CreatePage() {
             </p>
 
             {isLoadingPreview ? (
-              <div className="text-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: "#6E6E73" }} />
-                <p style={{ color: "#6E6E73" }}>Generating {displayName}&apos;s cartoon scenes…</p>
+              <div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                  {[0, 1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className="rounded-2xl overflow-hidden border aspect-square relative"
+                      style={{ borderColor: "#E5E5E5", background: "#F5F5F5" }}
+                    >
+                      {stills[i] ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={stills[i]}
+                          alt={`${displayName}'s cartoon scene ${i + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                          <span className="text-3xl paw-bounce">🐾</span>
+                          <span className="text-xs" style={{ color: "#A1A1AA" }}>
+                            Scene {i + 1}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className="text-center py-8">
+                  <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: "#6E6E73" }} />
+                  <p style={{ color: "#6E6E73" }}>
+                    {previewProgress ?? `Generating ${displayName}'s cartoon scenes…`}
+                  </p>
+                  {previewWaitMsg && (
+                    <p className="text-sm mt-2" style={{ color: "#A1A1AA" }}>
+                      {previewWaitMsg}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : previewError ? (
+              <div
+                className="rounded-2xl p-8 border text-center"
+                style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}
+              >
+                <p className="font-semibold mb-2" style={{ color: "#1D1D1F" }}>
+                  The studio hit a snag
+                </p>
+                <p className="text-sm mb-6" style={{ color: "#6E6E73" }}>
+                  {previewError}
+                </p>
+                <button
+                  onClick={goToPreview}
+                  className="btn-large rounded-2xl px-10"
+                  style={{ background: "#1D1D1F", color: "#FFFFFF" }}
+                >
+                  Try again
+                </button>
               </div>
             ) : (
-              <PreviewGate
-                stills={stills}
-                petName={petName}
-                onApprove={handleApprovePreview}
-                onRetry={handleRetryPreview}
-                retryUsed={retryUsed}
-              />
+              <>
+                {liveNotice && (
+                  <div
+                    className="rounded-2xl p-4 mb-6 border text-sm"
+                    style={{ background: "#FFF7ED", borderColor: "#FED7AA", color: "#9A3412" }}
+                  >
+                    {liveNotice}
+                  </div>
+                )}
+                <PreviewGate
+                  stills={stills}
+                  petName={petName}
+                  onApprove={handleApprovePreview}
+                  onRetry={handleRetryPreview}
+                  retryUsed={retryUsed}
+                />
+              </>
             )}
           </div>
         )}
@@ -673,7 +927,133 @@ export default function CreatePage() {
           </div>
         )}
 
-        {step === 5 && (
+        {step === 5 && clipPhase !== "none" && (
+          <div className="max-w-2xl mx-auto">
+            {clipPhase === "generating" && (
+              <div className="text-center">
+                <h1
+                  className="font-bold mb-3"
+                  style={{ fontSize: "clamp(28px,5vw,38px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
+                >
+                  Animating {displayName}&apos;s episode
+                </h1>
+                <p className="mb-8" style={{ fontSize: "17px", color: "#6E6E73", lineHeight: 1.6 }}>
+                  Each scene takes about 3–6 minutes to animate. You can leave this page —
+                  we&apos;ll pick up right where you left off when you come back.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                  {[0, 1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className="rounded-2xl overflow-hidden border relative aspect-video"
+                      style={{ borderColor: "#E5E5E5", background: "#F5F5F5" }}
+                    >
+                      {stills[i] && (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={stills[i]}
+                          alt={`Scene ${i + 1}`}
+                          className="w-full h-full object-cover"
+                          style={{ opacity: i < clipUrls.length ? 1 : 0.45 }}
+                        />
+                      )}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        {i < clipUrls.length ? (
+                          <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center"
+                            style={{ background: "#10B981" }}
+                          >
+                            <Check className="w-5 h-5" style={{ color: "#FFFFFF" }} />
+                          </div>
+                        ) : i === clipScene ? (
+                          <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#1D1D1F" }} />
+                        ) : (
+                          <span className="text-xs font-semibold" style={{ color: "#6E6E73" }}>
+                            Waiting
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-sm" style={{ color: "#6E6E73" }}>
+                  {clipWaitMsg ?? `Animating scene ${Math.min(clipScene, 2) + 1} of 3…`}
+                </p>
+              </div>
+            )}
+
+            {clipPhase === "error" && (
+              <div
+                className="rounded-2xl p-8 border text-center"
+                style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}
+              >
+                <p className="font-semibold mb-2" style={{ color: "#1D1D1F" }}>
+                  The animation hit a snag
+                </p>
+                <p className="text-sm mb-6" style={{ color: "#6E6E73" }}>
+                  {clipError}
+                </p>
+                <button
+                  onClick={() => void runClipGeneration(stills, petName, theme)}
+                  className="btn-large rounded-2xl px-10"
+                  style={{ background: "#1D1D1F", color: "#FFFFFF" }}
+                >
+                  Resume animating
+                </button>
+              </div>
+            )}
+
+            {clipPhase === "done" && (
+              <div>
+                <div className="text-center mb-8">
+                  <div
+                    className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
+                    style={{ background: "#ECFDF5" }}
+                  >
+                    <Check className="w-8 h-8" style={{ color: "#10B981" }} />
+                  </div>
+                  <h1
+                    className="font-bold mb-3"
+                    style={{ fontSize: "clamp(28px,5vw,38px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
+                  >
+                    {displayName}&apos;s episode is ready
+                  </h1>
+                  <p style={{ fontSize: "17px", color: "#6E6E73", lineHeight: 1.6 }}>
+                    Three scenes playing on a loop, just like on the TV. Your channel version
+                    arrives as one continuous video.
+                  </p>
+                </div>
+
+                <EpisodePlayer clips={clipUrls} petName={displayName} />
+
+                <p className="text-sm mt-4 text-center" style={{ color: "#A1A1AA" }}>
+                  Download links stay fresh for about an hour — save your favorite scenes now.
+                </p>
+
+                <p className="text-sm font-medium mt-8 mb-1 text-center" style={{ color: "#F97316" }}>
+                  🐾 Thank you — part of every real order goes to a dog rescue.
+                </p>
+                <p className="text-sm text-center mb-8">
+                  <Link href="/impact" style={{ color: "#6E6E73" }}>
+                    See the public impact ledger →
+                  </Link>
+                </p>
+
+                <div className="text-center">
+                  <button
+                    onClick={resetFlow}
+                    className="btn-large rounded-2xl px-10"
+                    style={{ background: "#1D1D1F", color: "#FFFFFF" }}
+                  >
+                    Create another episode
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {step === 5 && clipPhase === "none" && (
           <div className="max-w-xl mx-auto text-center">
             <div
               className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
