@@ -81,6 +81,17 @@ Upsell SKUs: $9.99 three-theme pack (~90s), $19.99 "season" (10 videos over time
 5. Email notification with TV instructions
 6. Ledger page (manual data at first)
 
+## Privacy, sharing, and playback (v2.1)
+
+- **Per-video privacy** — user picks private / unlisted / public at creation (YouTube API `privacyStatus`). Private still works as Dog TV on any TV signed into their account.
+- **App-layer sharing** — we keep the master MP4; YouTube's private-share is too clunky. Share = in-app link, or "**send to Grandma's TV**": upload the episode directly to another connected user's channel.
+- **Favorites playlist** — app-managed YouTube playlist of favorite episodes (autoplay; ads possible between videos).
+- **Mega-loop render (premium)** — stitch favorites server-side into one continuous 1–4 hr video, uploaded as a single file. No between-video breaks; the real "uninterrupted Dog TV" answer. Truly ad-free guarantee requires our own TV app or download — later phase.
+
+## Feature backlog (v2.1 ideas)
+
+Multi-dog episodes (Nano Banana Pro handles multiple subjects) · Season-pass subscription (new episode monthly, auto-published) · Gift flow (adult kids buy for parents — likely top acquisition channel) · Holiday + dog-birthday episodes · Pack crossovers (your dog + friend's dog; viral loop) · Calming mode (dog-vision palette, low-stress audio, slower motion — DOGTV's science, our personalization) · Owner's-voice audio layer · Charity picker with impact receipt · Print-on-demand poster of the character · B2B calm loops for kennels/vets/daycares · Memorial episodes (gentle handling).
+
 ## Today's artifacts
 
 - `puptv_pipeline_test.py` — working pipeline script (now with `--details`)
