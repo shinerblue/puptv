@@ -71,7 +71,17 @@ export default function PricingPage() {
           ))}
         </div>
 
-        <p className="text-center text-sm mt-10" style={{ color: "#6E6E73" }}>
+        <div className="rounded-2xl p-6 mt-8 border max-w-2xl mx-auto" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+          <p className="text-sm leading-relaxed text-center" style={{ color: "#6E6E73" }}>
+            On the create flow, you also pick a quality tier — <strong style={{ color: "#1D1D1F" }}>Good</strong>{" "}
+            or <strong style={{ color: "#1D1D1F" }}>Great</strong> (our signature quality, included in the prices
+            above). Picking Good drops a single episode to <strong style={{ color: "#1D1D1F" }}>$2.99</strong>.
+            <strong style={{ color: "#1D1D1F" }}> Deluxe</strong> — cinema-grade with sound — is coming soon.
+            The $1.00-per-episode rescue pledge stays the same no matter which quality you pick.
+          </p>
+        </div>
+
+        <p className="text-center text-sm mt-6" style={{ color: "#6E6E73" }}>
           Thirty-day refund, no questions. Every plan lets you preview the cartoon before you pay.
         </p>
       </section>

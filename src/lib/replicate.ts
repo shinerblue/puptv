@@ -1,5 +1,5 @@
 /**
- * Server-side Replicate helpers for PupTV live generation.
+ * Server-side Replicate helpers for ToonTails live generation.
  *
  * Live mode is env-gated: it requires REPLICATE_API_TOKEN and can be
  * force-disabled with PUPTV_LIVE=off. Without a token, every API route
@@ -16,7 +16,14 @@
 
 const REPLICATE_API = "https://api.replicate.com/v1";
 
+/** Used for every quality tier — only the animation model varies (see lib/tiers.ts). */
 export const STILL_MODEL = "google/nano-banana-pro";
+/**
+ * Default/reference animation model (the "Great" tier). Quality-tier
+ * selection is authoritative in lib/tiers.ts (videoModelForTier) — this
+ * constant is kept only as the historical default and is no longer read
+ * directly by /api/generate-video.
+ */
 export const VIDEO_MODEL = "kwaivgi/kling-v2.5-turbo-pro";
 
 /** Scene descriptions per theme — copied verbatim from the reference pipeline. */

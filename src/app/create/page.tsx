@@ -22,6 +22,7 @@ import PreviewGate from "@/components/PreviewGate";
 import PrivacyPicker, { PrivacyOption } from "@/components/PrivacyPicker";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import PricingPicker from "@/components/PricingPicker";
+import TierPicker from "@/components/TierPicker";
 import CharityPicker from "@/components/CharityPicker";
 import CalmModeToggle from "@/components/CalmModeToggle";
 import PosterCard from "@/components/PosterCard";
@@ -29,6 +30,7 @@ import SendToTvModal from "@/components/SendToTvModal";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { useAuthState } from "@/components/AuthProvider";
 import { PRICING_TIERS } from "@/lib/pricing";
+import { QUALITY_TIERS, DEFAULT_TIER_ID, type TierId } from "@/lib/tiers";
 import { CHARITIES } from "@/lib/impact";
 
 const STEP_LABELS = ["Photos", "Details", "Preview", "Checkout", "Done"];
@@ -48,6 +50,7 @@ export default function CreatePage() {
   const [details, setDetails] = useState("");
   const [theme, setTheme] = useState("park");
   const [occasion, setOccasion] = useState("");
+  const [tier, setTier] = useState<TierId>(DEFAULT_TIER_ID);
 
   const [hasSecondPet, setHasSecondPet] = useState(false);
   const [pet2Name, setPet2Name] = useState("");
@@ -95,6 +98,7 @@ export default function CreatePage() {
     : petName.trim() || "Your dog";
 
   const selectedTier = PRICING_TIERS.find((t) => t.id === sku) ?? PRICING_TIERS[0];
+  const selectedQualityTier = QUALITY_TIERS.find((t) => t.id === tier) ?? QUALITY_TIERS[1];
   const selectedCharityObj = CHARITIES.find((c) => c.id === charity) ?? CHARITIES[CHARITIES.length - 1];
 
   const handlePhotosSelected = useCallback((p: CompressedPhoto[]) => setPhotos(p), []);
@@ -197,7 +201,7 @@ export default function CreatePage() {
    * the tab — on return we resume instead of paying for new renders.
    */
   const runClipGeneration = useCallback(
-    async (liveStills: string[], name: string, themeId: string) => {
+    async (liveStills: string[], name: string, themeId: string, tierId: TierId) => {
       if (clipRunActive.current) return;
       clipRunActive.current = true;
       setClipPhase("generating");
@@ -205,6 +209,7 @@ export default function CreatePage() {
       const job: ClipJob = loadClipJob() ?? {
         petName: name,
         theme: themeId,
+        tier: tierId,
         stills: liveStills,
         predictionIds: {},
         clipUrls: {},
@@ -229,6 +234,7 @@ export default function CreatePage() {
                 petName: job.petName,
                 theme: job.theme,
                 sceneIndex: scene,
+                tier: job.tier,
               },
               setClipWaitMsg
             );
@@ -283,13 +289,14 @@ export default function CreatePage() {
     const done = orderedClipUrls(job);
     setPetName(job.petName);
     setTheme(job.theme);
+    setTier(job.tier);
     setStills(job.stills);
     setClipUrls(done);
     setStep(5);
     if (done.length === 3) {
       setClipPhase("done");
     } else {
-      void runClipGeneration(job.stills, job.petName, job.theme);
+      void runClipGeneration(job.stills, job.petName, job.theme, job.tier);
     }
   }, [runClipGeneration]);
   /* eslint-enable react-hooks/set-state-in-effect */
@@ -329,7 +336,7 @@ export default function CreatePage() {
         clearClipJob();
         setClipUrls([]);
         setStep(5);
-        void runClipGeneration(stills, petName, theme);
+        void runClipGeneration(stills, petName, theme, tier);
         return;
       }
       const res = await fetch("/api/generate-video", {
@@ -343,6 +350,7 @@ export default function CreatePage() {
           occasion,
           privacy,
           sku,
+          tier,
           charity,
           calmMode,
           pack: hasSecondPet && packAdventure,
@@ -388,6 +396,7 @@ export default function CreatePage() {
     setDetails("");
     setTheme("park");
     setOccasion("");
+    setTier(DEFAULT_TIER_ID);
     setHasSecondPet(false);
     setPet2Name("");
     setPet2Breed("");
@@ -430,7 +439,9 @@ export default function CreatePage() {
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2" style={{ color: "#6E6E73" }}>
             <ArrowLeft className="w-4 h-4" />
-            <span className="font-bold text-lg" style={{ color: "#1D1D1F" }}>PupTV</span>
+            {/* eslint-disable-next-line @next/next/no-img-element -- small static brand asset */}
+            <img src="/brand/toontails-icon.png" alt="" width={22} height={22} style={{ borderRadius: 6 }} />
+            <span className="font-bold text-lg" style={{ color: "#1D1D1F" }}>ToonTails</span>
           </Link>
 
           <div className="hidden sm:flex items-center gap-1.5">
@@ -695,6 +706,16 @@ export default function CreatePage() {
               <OccasionPicker selected={occasion} onSelect={setOccasion} labelledBy="occasion-label" />
             </div>
 
+            <div className="mb-8">
+              <div id="tier-label" className="block font-semibold mb-1" style={{ fontSize: "16px", color: "#1D1D1F" }}>
+                Choose your quality tier
+              </div>
+              <p className="text-sm mb-3" style={{ color: "#6E6E73" }}>
+                Every tier keeps your dog&apos;s exact look — this only changes how smooth the animation is.
+              </p>
+              <TierPicker selected={tier} onSelect={setTier} labelledBy="tier-label" />
+            </div>
+
             {hasSecondPet && (
               <div
                 className="rounded-2xl p-5 mb-8 border flex items-center justify-between gap-4"
@@ -904,6 +925,10 @@ export default function CreatePage() {
                   <span style={{ color: "#6E6E73" }}>Plan</span>
                   <span className="font-medium" style={{ color: "#1D1D1F" }}>{selectedTier.name}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span style={{ color: "#6E6E73" }}>Quality</span>
+                  <span className="font-medium" style={{ color: "#1D1D1F" }}>{selectedQualityTier.name}</span>
+                </div>
                 <div className="flex justify-between pt-3 border-t" style={{ borderColor: "#E5E5E5" }}>
                   <span style={{ color: "#6E6E73" }}>Total</span>
                   <div className="text-right">
@@ -1091,7 +1116,7 @@ export default function CreatePage() {
                       : "Nothing has been charged. Picking up again starts fresh."}
                   </p>
                   <button
-                    onClick={() => void runClipGeneration(stills, petName, theme)}
+                    onClick={() => void runClipGeneration(stills, petName, theme, tier)}
                     className="btn-large rounded-2xl px-10"
                     style={{ background: "#1D1D1F", color: "#FFFFFF" }}
                   >
@@ -1206,7 +1231,7 @@ export default function CreatePage() {
             </h1>
             <p className="mb-10" style={{ fontSize: "17px", color: "#6E6E73", lineHeight: 1.6 }}>
               {displayName}&apos;s episode will appear on your YouTube channel in about{" "}
-              {confirmEta} minutes. Here&apos;s a sample of what a finished PupTV episode looks like:
+              {confirmEta} minutes. Here&apos;s a sample of what a finished ToonTails episode looks like:
             </p>
 
             <YouTubeEmbed videoId={confirmVideoId} title={`${displayName}'s sample episode`} />

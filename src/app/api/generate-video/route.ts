@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  VIDEO_MODEL,
   VIDEO_NEGATIVE_PROMPT,
   THEME_SCENES,
   ReplicateHttpError,
@@ -10,6 +9,7 @@ import {
   isLiveEnabled,
 } from "@/lib/replicate";
 import { clientIpFrom, takeClip } from "@/lib/rateLimit";
+import { videoModelForTier } from "@/lib/tiers";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -28,15 +28,18 @@ function demoResponse(petName: string, notice?: string) {
 }
 
 /**
- * Video clip generation (one 5s scene per request).
+ * Video clip generation (one 5s scene per request) — ToonTails live pipeline.
  *
  * DEMO MODE (no REPLICATE_API_TOKEN, or PUPTV_LIVE=off, or legacy request
  * without a stillUrl): returns the original sample confirmation payload —
  * identical behavior to the original stub.
  *
- * LIVE MODE: animates an approved cartoon still with
- * kwaivgi/kling-v2.5-turbo-pro and returns { predictionId } immediately
- * (client polls /api/job-status; clips take ~3-6 minutes).
+ * LIVE MODE: animates an approved cartoon still and returns { predictionId }
+ * immediately (client polls /api/job-status; clips take ~3-6 minutes). The
+ * animation model is chosen SERVER-SIDE from the client's `tier` id via
+ * videoModelForTier() (lib/tiers.ts) — the client never sends a model
+ * string, so a tampered request can't run an arbitrary Replicate model on
+ * our account or unlock the not-yet-selectable Deluxe tier.
  */
 export async function POST(request: NextRequest) {
   const body: Record<string, unknown> = await request.json().catch(() => ({}));
@@ -77,7 +80,8 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const prediction = await createPrediction(VIDEO_MODEL, {
+    const model = videoModelForTier(body.tier);
+    const prediction = await createPrediction(model, {
       prompt: buildVideoPrompt(petName, theme, sceneIndex),
       start_image: stillUrl,
       duration: 5,

@@ -420,6 +420,15 @@ body {
 }
 .pick-card:hover { border-color: #D4D4D4; }
 .pick-card.selected { border-color: #1D1D1F; background: #1D1D1F; color: #FFFFFF; }
+.pick-card:disabled,
+.pick-card.disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.pick-card:disabled:hover,
+.pick-card.disabled:hover {
+  border-color: #E5E5E5;
+}
 
 /* --- Component: large accessible button base --- */
 .btn-large {

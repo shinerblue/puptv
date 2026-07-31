@@ -7,6 +7,8 @@
  *   live:  { demo: false, predictionId }                  → poll /api/job-status
  */
 
+import { DEFAULT_TIER_ID, isValidTierId, type TierId } from "@/lib/tiers";
+
 export interface StartGenerationResponse {
   success?: boolean;
   demo?: boolean;
@@ -125,7 +127,7 @@ export async function pollPrediction(predictionId: string, timeoutMs: number): P
  *  animation run survives the user leaving the tab / reloading.
  * ------------------------------------------------------------------ */
 
-const CLIP_JOB_KEY = "puptv.clipJob.v1";
+const CLIP_JOB_KEY = "toontails.clipJob.v1";
 
 /**
  * Replicate output URLs (replicate.delivery) expire after ~1 hour, so a
@@ -138,6 +140,8 @@ const CLIP_JOB_MAX_AGE_MS = 60 * 60 * 1000;
 export interface ClipJob {
   petName: string;
   theme: string;
+  /** Quality tier chosen on the details step; server re-validates independently. */
+  tier: TierId;
   stills: string[];
   predictionIds: Partial<Record<number, string>>;
   clipUrls: Partial<Record<number, string>>;
@@ -161,6 +165,7 @@ export function loadClipJob(): ClipJob | null {
     return {
       petName: parsed.petName,
       theme: parsed.theme,
+      tier: isValidTierId(parsed.tier) ? parsed.tier : DEFAULT_TIER_ID,
       stills: parsed.stills,
       predictionIds: parsed.predictionIds ?? {},
       clipUrls: parsed.clipUrls ?? {},
