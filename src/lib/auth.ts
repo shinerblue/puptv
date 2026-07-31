@@ -1,5 +1,6 @@
 /**
- * Auth.js (next-auth v5) configuration for PupTV.
+ * Auth.js (next-auth v5) configuration for ToonTails (repo/deployment still
+ * named "puptv" — see layout.tsx for the rebrand note).
  *
  * DESIGN CONSTRAINTS (do not break these):
  *  - ZERO DATABASE. No adapter is configured, so sessions are stateless
@@ -133,7 +134,7 @@ export const authConfig: NextAuthConfig = {
   },
   jwt: { maxAge: SESSION_MAX_AGE_SECONDS },
 
-  // Keep people inside PupTV's own design instead of Auth.js's default pages.
+  // Keep people inside ToonTails' own design instead of Auth.js's default pages.
   pages: { signIn: "/account", error: "/account" },
 
   callbacks: {

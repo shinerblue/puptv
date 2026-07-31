@@ -30,7 +30,7 @@ function demoResponse(petName: string | undefined, notice?: string) {
 }
 
 /**
- * Cartoon still generation (one scene per request).
+ * Cartoon still generation (one scene per request) — ToonTails live pipeline.
  *
  * DEMO MODE (no REPLICATE_API_TOKEN, or PUPTV_LIVE=off, or no photos in
  * the request): returns the sample stills — identical behavior to the

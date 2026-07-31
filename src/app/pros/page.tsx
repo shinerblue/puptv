@@ -47,7 +47,7 @@ export default function ProsPage() {
             calm loops on your lobby TVs, reach out and we&apos;ll set it up by hand.
           </p>
           <a
-            href="mailto:hello@puptv.app?subject=PupTV%20for%20Business"
+            href="mailto:hello@toontails.tv?subject=ToonTails%20for%20Business"
             className="btn-large rounded-2xl px-8 inline-flex items-center justify-center gap-2"
             style={{ background: "#1D1D1F", color: "#FFFFFF" }}
           >

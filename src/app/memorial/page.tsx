@@ -11,7 +11,7 @@ export default function MemorialPage() {
           className="font-bold mb-8"
           style={{ fontSize: "clamp(28px, 5vw, 40px)", letterSpacing: "-0.02em", lineHeight: 1.2, color: "#3F3F46" }}
         >
-          A quiet corner of PupTV
+          A quiet corner of ToonTails
         </h1>
 
         <p className="mb-6 leading-relaxed" style={{ fontSize: "17px", color: "#52525B" }}>
@@ -41,7 +41,7 @@ export default function MemorialPage() {
 
       <footer className="border-t py-8 text-center text-sm" style={{ borderColor: "#E5E5E5", color: "#6E6E73" }}>
         <Link href="/" style={{ color: "#6E6E73" }}>
-          PupTV
+          ToonTails
         </Link>
       </footer>
     </div>

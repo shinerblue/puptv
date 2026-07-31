@@ -40,7 +40,7 @@ export default function EpisodePlayer({ clips, petName }: EpisodePlayerProps) {
     }
   };
 
-  const slug = petName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "puptv";
+  const slug = petName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "toontails";
 
   return (
     <div>

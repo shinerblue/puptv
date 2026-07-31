@@ -86,7 +86,7 @@ export default function AccountPage() {
               </p>
               <p className="text-sm" style={{ color: "#6E6E73", lineHeight: 1.6 }}>
                 Just this session cookie in your browser — your name, email and photo, exactly as
-                Google gave them to us. PupTV has no database. Nothing about you is saved on our
+                Google gave them to us. ToonTails has no database. Nothing about you is saved on our
                 servers, and signing out anywhere clears it everywhere.
               </p>
             </div>

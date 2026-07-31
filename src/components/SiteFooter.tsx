@@ -33,8 +33,10 @@ export default function SiteFooter() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-10 mb-12">
           <div>
-            <span className="font-bold text-lg" style={{ color: "#1D1D1F" }}>
-              PupTV
+            <span className="flex items-center gap-2 font-bold text-lg" style={{ color: "#1D1D1F" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element -- small static brand asset */}
+              <img src="/brand/toontails-icon.png" alt="" width={22} height={22} style={{ borderRadius: 6 }} />
+              ToonTails
             </span>
             <p className="text-sm mt-3 leading-relaxed" style={{ color: "#6E6E73", maxWidth: "220px" }}>
               Your dog&apos;s own cartoon adventure — on your TV. Dogs first, cats coming soon.
@@ -59,7 +61,7 @@ export default function SiteFooter() {
           ))}
         </div>
         <div className="pt-8 border-t text-center text-sm" style={{ borderColor: "#E5E5E5", color: "#6E6E73" }}>
-          PupTV · Dogs first, cats coming soon · Proceeds fund dog rescues
+          ToonTails · Dogs first, cats coming soon · Proceeds fund dog rescues
         </div>
       </div>
     </footer>

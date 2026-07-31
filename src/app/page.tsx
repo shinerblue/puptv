@@ -39,8 +39,10 @@ export default function HomePage() {
       >
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element -- small static brand asset */}
+            <img src="/brand/toontails-icon.png" alt="" width={28} height={28} style={{ borderRadius: 8 }} />
             <span className="font-bold text-xl tracking-tight" style={{ color: "#1D1D1F" }}>
-              PupTV
+              ToonTails
             </span>
           </div>
           <div className="hidden md:flex items-center gap-8">

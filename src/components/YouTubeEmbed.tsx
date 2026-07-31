@@ -5,7 +5,7 @@ interface YouTubeEmbedProps {
   title?: string;
 }
 
-export default function YouTubeEmbed({ videoId, title = "PupTV sample episode" }: YouTubeEmbedProps) {
+export default function YouTubeEmbed({ videoId, title = "ToonTails sample episode" }: YouTubeEmbedProps) {
   return (
     <div
       className="aspect-video rounded-2xl overflow-hidden border"

@@ -31,7 +31,7 @@ export const CHARITIES: Charity[] = [
   },
   {
     id: "choose-for-me",
-    name: "Let PupTV choose",
+    name: "Let ToonTails choose",
     location: "",
     blurb: "We'll route your donation to whichever partner rescue needs it most that week.",
   },

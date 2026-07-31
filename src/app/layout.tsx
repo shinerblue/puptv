@@ -9,11 +9,14 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+// NOTE: the GitHub repo and Vercel project stay "puptv" for now (URLs remain
+// puptv.vercel.app) — only the product-facing brand changed to ToonTails.
+// Future home: toontails.tv.
 export const metadata: Metadata = {
-  title: "PupTV — Your dog's own TV show, on your TV",
+  title: "ToonTails — Your dog's own TV show, on your TV",
   description:
     "Upload a few photos of your dog and get a cartoon adventure series that publishes straight to your YouTube channel — automatically. Dogs first, cats coming soon. Proceeds fund dog rescues.",
-  keywords: ["dog tv", "pet video", "cartoon dog", "AI video", "dog charity", "youtube", "pet tv"],
+  keywords: ["dog tv", "pet video", "cartoon dog", "AI video", "dog charity", "youtube", "pet tv", "toontails"],
 };
 
 export default async function RootLayout({

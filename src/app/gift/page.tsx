@@ -60,7 +60,7 @@ export default function GiftPage() {
       <section className="max-w-2xl mx-auto px-6 pb-16">
         <div className="rounded-3xl p-8 md:p-10 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
           <p className="mb-4 leading-relaxed" style={{ color: "#1D1D1F", fontSize: "17px" }}>
-            You buy a PupTV gift — pick &ldquo;give as gift&rdquo; at checkout. Upload photos of the dog —
+            You buy a ToonTails gift — pick &ldquo;give as gift&rdquo; at checkout. Upload photos of the dog —
             you send them, you pay. That&apos;s it.
           </p>
           <p className="mb-4 leading-relaxed" style={{ color: "#6E6E73", fontSize: "16px" }}>
@@ -122,7 +122,7 @@ export default function GiftPage() {
           ) : (
             <form onSubmit={handleSubmit}>
               <h3 className="font-bold mb-2" style={{ fontSize: "22px", color: "#1D1D1F" }}>
-                Send a PupTV gift
+                Send a ToonTails gift
               </h3>
               <p className="text-sm mb-6" style={{ color: "#6E6E73" }}>
                 Demo form — fill this in to see how the gift flow ends.

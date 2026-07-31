@@ -4,8 +4,9 @@ import { isLiveEnabled } from "@/lib/replicate";
 export const dynamic = "force-dynamic";
 
 /**
- * Reports whether live AI generation is enabled on this deployment
- * (REPLICATE_API_TOKEN present and PUPTV_LIVE not set to "off").
+ * Reports whether live AI generation is enabled on this ToonTails deployment
+ * (REPLICATE_API_TOKEN present and PUPTV_LIVE not set to "off" — the env var
+ * name is unchanged post-rebrand to avoid touching Vercel config).
  * Never exposes the token itself.
  */
 export async function GET() {

@@ -21,7 +21,7 @@ export default function ImpactPage() {
           A public, running ledger
         </h1>
         <p className="text-xl mx-auto leading-relaxed" style={{ color: "#6E6E73", maxWidth: "580px" }}>
-          Every PupTV episode you buy funds dog rescues. Not &ldquo;someday.&rdquo; Right now. The
+          Every ToonTails episode you buy funds dog rescues. Not &ldquo;someday.&rdquo; Right now. The
           numbers below are illustrative — the real ledger goes live with our first customers.
         </p>
       </section>
@@ -73,7 +73,7 @@ export default function ImpactPage() {
             operations that film random dogs they don&apos;t know, owned by no one in particular.
           </p>
           <p className="text-sm leading-relaxed" style={{ color: "#6E6E73" }}>
-            PupTV is different. The dog is yours. The money goes to rescues that save dogs today.
+            ToonTails is different. The dog is yours. The money goes to rescues that save dogs today.
             That&apos;s it.
           </p>
         </div>

@@ -20,8 +20,10 @@ export default function SimpleNav({ hideCta = false, muted = false }: SimpleNavP
       }}
     >
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="font-bold text-xl tracking-tight" style={{ color: muted ? "#6E6E73" : "#1D1D1F" }}>
-          PupTV
+        <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight" style={{ color: muted ? "#6E6E73" : "#1D1D1F" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- small static brand asset */}
+          <img src="/brand/toontails-icon.png" alt="" width={28} height={28} style={{ borderRadius: 8 }} />
+          ToonTails
         </Link>
         <div className="flex items-center gap-3">
           {!hideCta && (
