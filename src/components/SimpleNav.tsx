@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import AccountMenu from "@/components/AccountMenu";
 
 interface SimpleNavProps {
   hideCta?: boolean;
@@ -22,15 +23,18 @@ export default function SimpleNav({ hideCta = false, muted = false }: SimpleNavP
         <Link href="/" className="font-bold text-xl tracking-tight" style={{ color: muted ? "#6E6E73" : "#1D1D1F" }}>
           PupTV
         </Link>
-        {!hideCta && (
-          <Link
-            href="/create"
-            className="text-sm font-semibold px-5 py-2.5 rounded-full"
-            style={{ background: "#1D1D1F", color: "#FFFFFF" }}
-          >
-            Create your dog&apos;s show
-          </Link>
-        )}
+        <div className="flex items-center gap-3">
+          {!hideCta && (
+            <Link
+              href="/create"
+              className="text-sm font-semibold px-5 py-2.5 rounded-full"
+              style={{ background: "#1D1D1F", color: "#FFFFFF" }}
+            >
+              Create your dog&apos;s show
+            </Link>
+          )}
+          <AccountMenu />
+        </div>
       </div>
     </nav>
   );

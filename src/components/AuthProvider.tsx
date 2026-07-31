@@ -10,20 +10,18 @@ export interface AuthUser {
 }
 
 export interface AuthState {
-  /** True only when AUTH_SECRET plus at least one provider are configured. */
+  /** True only when AUTH_SECRET and Google's client id/secret are configured. */
   configured: boolean;
-  /** Apple is scaffolded but off until the Apple Developer account exists. */
-  appleEnabled: boolean;
   user: AuthUser | null;
 }
 
 /**
  * The default is the degraded state, and it is the value every consumer sees
  * when the provider is absent. That is what lets the root layout skip
- * mounting this entirely when auth is unconfigured: the sign-in UI simply
- * never renders and the app is byte-for-byte what it was before.
+ * mounting a session lookup entirely when auth is unconfigured: the sign-in
+ * UI simply never renders and the app is byte-for-byte what it was before.
  */
-const DEGRADED: AuthState = { configured: false, appleEnabled: false, user: null };
+const DEGRADED: AuthState = { configured: false, user: null };
 
 const AuthContext = createContext<AuthState>(DEGRADED);
 

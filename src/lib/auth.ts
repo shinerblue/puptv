@@ -5,17 +5,19 @@
  *  - ZERO DATABASE. No adapter is configured, so sessions are stateless
  *    JWTs held in an httpOnly cookie. Nothing about a user is persisted
  *    anywhere on our side — see /account, which says exactly that.
- *  - FULLY ENV-GATED. With no AUTH_* / GOOGLE_* / APPLE_* variables the
- *    app must behave exactly as it did before auth existed: no providers,
- *    no sign-in UI, and /api/auth/* answers 404. `isAuthConfigured()` is
- *    the single source of truth for that and is read at request time, so
- *    adding the env vars in Vercel switches auth on without a code change.
+ *  - GOOGLE ONLY. Sign-in is Google-only by design. There is no Apple
+ *    provider, scaffolded or otherwise — if that changes, it starts here.
+ *  - FULLY ENV-GATED. With no AUTH_SECRET / GOOGLE_CLIENT_ID / GOOGLE_
+ *    CLIENT_SECRET the app must behave exactly as it did before auth
+ *    existed: no provider, no sign-in UI, and /api/auth/* answers 404.
+ *    `isAuthConfigured()` is the single source of truth for that and is
+ *    read at request time, so adding the env vars in Vercel switches auth
+ *    on without a code change.
  *  - SERVER ONLY. This module pulls in next-auth and reads secrets from
  *    process.env; it must never be imported from a "use client" file.
  */
 import NextAuth, { type NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
-import Apple from "next-auth/providers/apple";
 import type { Provider } from "next-auth/providers";
 
 /** 30 days — long enough that a 55+ audience is not re-authenticating weekly. */
@@ -32,23 +34,13 @@ export function isGoogleConfigured(): boolean {
 }
 
 /**
- * Apple is scaffolded but deferred: it needs a paid Apple Developer
- * account, a Services ID and a signing key, and APPLE_CLIENT_SECRET must
- * be a pre-generated JWT (see docs/auth-setup.md). Until those exist the
- * provider is simply never constructed.
- */
-export function isAppleConfigured(): boolean {
-  return Boolean(env("APPLE_CLIENT_ID") && env("APPLE_CLIENT_SECRET"));
-}
-
-/**
- * Auth is "on" only when a secret exists AND at least one provider is
- * fully configured. A secret without providers (or providers without a
- * secret) is a half-configured deployment, and half-configured auth is
- * worse than none — we stay in degraded mode instead.
+ * Auth is "on" only when a secret exists AND Google is fully configured.
+ * A secret without a provider (or a provider without a secret) is a
+ * half-configured deployment, and half-configured auth is worse than
+ * none — we stay in degraded mode instead.
  */
 export function isAuthConfigured(): boolean {
-  return Boolean(env("AUTH_SECRET")) && (isGoogleConfigured() || isAppleConfigured());
+  return Boolean(env("AUTH_SECRET")) && isGoogleConfigured();
 }
 
 function buildProviders(): Provider[] {
@@ -83,21 +75,6 @@ function buildProviders(): Provider[] {
             // -------------------------------------------------------------
           },
         },
-      })
-    );
-  }
-
-  const appleId = env("APPLE_CLIENT_ID");
-  const appleSecret = env("APPLE_CLIENT_SECRET");
-  if (appleId && appleSecret) {
-    providers.push(
-      Apple({
-        // Services ID (e.g. tv.puptv.web), NOT the App ID.
-        clientId: appleId,
-        // A JWT signed with the .p8 key, built from APPLE_TEAM_ID +
-        // APPLE_KEY_ID + the key file. Expires every 6 months; regenerate
-        // with `npx auth add apple`. See docs/auth-setup.md.
-        clientSecret: appleSecret,
       })
     );
   }

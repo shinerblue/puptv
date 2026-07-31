@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { isAppleConfigured, isAuthConfigured, isGoogleConfigured, signIn, signOut } from "@/lib/auth";
+import { isAuthConfigured, isGoogleConfigured, signIn, signOut } from "@/lib/auth";
 
 /**
  * Server actions for sign in / sign out.
@@ -27,11 +27,6 @@ function safeCallbackUrl(value: FormDataEntryValue | null): string {
 export async function signInWithGoogle(formData: FormData): Promise<void> {
   if (!isAuthConfigured() || !isGoogleConfigured()) redirect("/account");
   await signIn("google", { redirectTo: safeCallbackUrl(formData.get("callbackUrl")) });
-}
-
-export async function signInWithApple(formData: FormData): Promise<void> {
-  if (!isAuthConfigured() || !isAppleConfigured()) redirect("/account");
-  await signIn("apple", { redirectTo: safeCallbackUrl(formData.get("callbackUrl")) });
 }
 
 export async function signOutEverywhere(): Promise<void> {

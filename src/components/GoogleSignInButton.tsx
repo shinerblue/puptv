@@ -38,3 +38,51 @@ function GoogleG({ size }: { size: number }) {
     </svg>
   );
 }
+
+/**
+ * The button label swaps to a pending state via useFormStatus rather than
+ * local state — the form's action is a server action (signInWithGoogle),
+ * so this is the only reliable signal that the POST is in flight.
+ */
+function SubmitButton({ label }: { label: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className={`${roboto.className} w-full flex items-center justify-center gap-3 rounded-xl border transition-colors`}
+      style={{
+        minHeight: "52px",
+        fontSize: "15px",
+        background: "#FFFFFF",
+        borderColor: "#DADCE0",
+        color: "#3C4043",
+        cursor: pending ? "default" : "pointer",
+        opacity: pending ? 0.7 : 1,
+      }}
+    >
+      <GoogleG size={20} />
+      {pending ? "Signing in…" : label}
+    </button>
+  );
+}
+
+/**
+ * Google-branded sign-in button. Renders nothing but a plain HTML <form>
+ * posting to the signInWithGoogle server action — no client id, secret or
+ * token ever reaches the browser via this component.
+ */
+export default function GoogleSignInButton({
+  callbackUrl = "/",
+  label = "Sign in with Google",
+}: {
+  callbackUrl?: string;
+  label?: string;
+}) {
+  return (
+    <form action={signInWithGoogle}>
+      <input type="hidden" name="callbackUrl" value={callbackUrl} />
+      <SubmitButton label={label} />
+    </form>
+  );
+}
