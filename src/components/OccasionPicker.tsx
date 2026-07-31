@@ -15,11 +15,18 @@ export const OCCASIONS: Occasion[] = [
 interface OccasionPickerProps {
   selected: string;
   onSelect: (id: string) => void;
+  /** id of the visible heading that names this group */
+  labelledBy?: string;
 }
 
-export default function OccasionPicker({ selected, onSelect }: OccasionPickerProps) {
+export default function OccasionPicker({ selected, onSelect, labelledBy }: OccasionPickerProps) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3" role="radiogroup" aria-label="Special occasion">
+    <div
+      className="grid grid-cols-2 sm:grid-cols-3 gap-3"
+      role="radiogroup"
+      aria-labelledby={labelledBy}
+      aria-label={labelledBy ? undefined : "Special occasion"}
+    >
       {OCCASIONS.map((occ) => {
         const isSelected = selected === occ.id;
         return (

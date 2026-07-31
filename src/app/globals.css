@@ -473,10 +473,62 @@ table.ledger-table th {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #A1A1AA;
+  color: #6E6E73;
   font-weight: 600;
 }
 @media (max-width: 640px) {
   table.ledger-table { font-size: 13px; }
   table.ledger-table th, table.ledger-table td { padding: 0.6rem 0.5rem; }
+}
+
+/* ============================================================
+   REVIEW PASS — utilities that were used in TSX but had no
+   definition here (Turbopack skips the Tailwind PostCSS plugin
+   in production, so an undefined class silently does nothing).
+   Verified with a class-coverage sweep across src/**.
+   ============================================================ */
+
+/* --- Display (responsive) — the create-flow step tracker used
+       `hidden sm:flex` / `sm:hidden` / `md:inline`, none of which
+       existed, so the desktop tracker never rendered. --- */
+@media (min-width: 640px) {
+  .sm\:flex   { display: flex; }
+  .sm\:hidden { display: none; }
+}
+@media (min-width: 768px) {
+  .md\:inline { display: inline; }
+  .md\:p-10   { padding: 2.5rem; }
+}
+
+/* --- Flex --- */
+.flex-\[1\.4\] { flex: 1.4; }
+
+/* --- Sizing --- */
+.w-7 { width: 1.75rem; }
+.h-7 { height: 1.75rem; }
+
+/* --- Padding --- */
+.p-5   { padding: 1.25rem; }
+.pb-4  { padding-bottom: 1rem; }
+.pb-10 { padding-bottom: 2.5rem; }
+.pb-14 { padding-bottom: 3.5rem; }
+.pt-5  { padding-top: 1.25rem; }
+.pt-8  { padding-top: 2rem; }
+
+/* --- Margin --- */
+.mt-1 { margin-top: 0.25rem; }
+
+/* --- Overflow --- */
+.overflow-x-auto { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ============================================================
+   FOCUS VISIBILITY
+   The pickers are plain <button>s and the text inputs carry
+   `.outline-none`, which left keyboard users with no visible
+   focus anywhere. Declared last so it wins over `.outline-none`.
+   ============================================================ */
+:focus-visible {
+  outline: 3px solid #F97316;
+  outline-offset: 2px;
+  border-radius: 4px;
 }
