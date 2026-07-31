@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { PawPrint, Tv, Heart } from "lucide-react";
+import SiteFooter from "@/components/SiteFooter";
+import { LEDGER_STATS } from "@/lib/impact";
 
 const VALUE_PROPS = [
   {
@@ -20,12 +22,6 @@ const VALUE_PROPS = [
     desc:
       "Most of what you pay covers production. What's left funds dog rescue organizations — and we publish the running numbers below.",
   },
-];
-
-const LEDGER_STATS = [
-  { label: "Episodes created", value: "128" },
-  { label: "Raised for rescues", value: "$384" },
-  { label: "Shelters funded", value: "6" },
 ];
 
 export default function HomePage() {
@@ -50,9 +46,12 @@ export default function HomePage() {
             <a href="#how-it-works" className="text-sm" style={{ color: "#6E6E73" }}>
               How it works
             </a>
-            <a href="#ledger" className="text-sm" style={{ color: "#6E6E73" }}>
-              Impact ledger
-            </a>
+            <Link href="/gift" className="text-sm" style={{ color: "#6E6E73" }}>
+              Gifts
+            </Link>
+            <Link href="/impact" className="text-sm" style={{ color: "#6E6E73" }}>
+              Impact
+            </Link>
           </div>
           <Link
             href="/create"
@@ -221,6 +220,12 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+
+          <div className="text-center mt-10">
+            <Link href="/impact" className="text-sm font-semibold" style={{ color: "#1D1D1F" }}>
+              See the full impact ledger →
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -252,12 +257,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer
-        className="border-t py-8 text-center text-sm"
-        style={{ borderColor: "#E5E5E5", color: "#A1A1AA" }}
-      >
-        PupTV · Dogs first, cats coming soon · Proceeds fund dog rescues
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

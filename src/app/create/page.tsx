@@ -2,12 +2,20 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import { ArrowLeft, Loader2, Tv, Check } from "lucide-react";
+import { ArrowLeft, Loader2, Tv, Check, Copy, Send, Moon } from "lucide-react";
 import PhotoUploader, { CompressedPhoto } from "@/components/PhotoUploader";
 import ThemePicker, { ADVENTURE_THEMES } from "@/components/ThemePicker";
+import OccasionPicker, { OCCASIONS } from "@/components/OccasionPicker";
 import PreviewGate from "@/components/PreviewGate";
 import PrivacyPicker, { PrivacyOption } from "@/components/PrivacyPicker";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
+import PricingPicker from "@/components/PricingPicker";
+import CharityPicker from "@/components/CharityPicker";
+import CalmModeToggle from "@/components/CalmModeToggle";
+import PosterCard from "@/components/PosterCard";
+import SendToTvModal from "@/components/SendToTvModal";
+import { PRICING_TIERS } from "@/lib/pricing";
+import { CHARITIES } from "@/lib/impact";
 
 const STEP_LABELS = ["Photos", "Details", "Preview", "Checkout", "Done"];
 
@@ -21,10 +29,22 @@ export default function CreatePage() {
   const [breed, setBreed] = useState("");
   const [details, setDetails] = useState("");
   const [theme, setTheme] = useState("park");
+  const [occasion, setOccasion] = useState("");
+
+  const [hasSecondPet, setHasSecondPet] = useState(false);
+  const [pet2Name, setPet2Name] = useState("");
+  const [pet2Breed, setPet2Breed] = useState("");
+  const [pet2Details, setPet2Details] = useState("");
+  const [packAdventure, setPackAdventure] = useState(false);
+
+  const [calmMode, setCalmMode] = useState(false);
 
   const [stills, setStills] = useState<string[]>([]);
   const [retryUsed, setRetryUsed] = useState(false);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+
+  const [sku, setSku] = useState<string>("single");
+  const [charity, setCharity] = useState<string>("choose-for-me");
 
   const [privacy, setPrivacy] = useState<PrivacyOption>("unlisted");
   const [youtubeConnected, setYoutubeConnected] = useState(false);
@@ -35,7 +55,15 @@ export default function CreatePage() {
   const [confirmEta, setConfirmEta] = useState(15);
   const [confirmVideoId, setConfirmVideoId] = useState("PIcIfIdC1kA");
 
-  const displayName = petName.trim() || "Your dog";
+  const [copyState, setCopyState] = useState<"idle" | "copied">("idle");
+  const [showShareModal, setShowShareModal] = useState(false);
+
+  const displayName = hasSecondPet && pet2Name.trim()
+    ? `${petName.trim() || "Your dog"} & ${pet2Name.trim()}`
+    : petName.trim() || "Your dog";
+
+  const selectedTier = PRICING_TIERS.find((t) => t.id === sku) ?? PRICING_TIERS[0];
+  const selectedCharityObj = CHARITIES.find((c) => c.id === charity) ?? CHARITIES[CHARITIES.length - 1];
 
   const handlePhotosSelected = useCallback((p: CompressedPhoto[]) => setPhotos(p), []);
 
@@ -46,14 +74,14 @@ export default function CreatePage() {
       const res = await fetch("/api/cartoonify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ petName, breed, details, theme }),
+        body: JSON.stringify({ petName, breed, details, theme, occasion, calmMode }),
       });
       const data = await res.json();
       setStills(data.stills || []);
     } finally {
       setIsLoadingPreview(false);
     }
-  }, [petName, breed, details, theme]);
+  }, [petName, breed, details, theme, occasion, calmMode]);
 
   const handleApprovePreview = () => setStep(4);
 
@@ -81,7 +109,19 @@ export default function CreatePage() {
       const res = await fetch("/api/generate-video", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ petName, breed, details, theme, privacy }),
+        body: JSON.stringify({
+          petName,
+          breed,
+          details,
+          theme,
+          occasion,
+          privacy,
+          sku,
+          charity,
+          calmMode,
+          pack: hasSecondPet && packAdventure,
+          secondPet: hasSecondPet ? { name: pet2Name, breed: pet2Breed, details: pet2Details } : null,
+        }),
       });
       const data = await res.json();
       setConfirmEta(data.etaMinutes ?? 15);
@@ -92,6 +132,18 @@ export default function CreatePage() {
     }
   };
 
+  const handleCopyLink = async () => {
+    const slug = (petName || "dutch").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const url = `https://puptv.vercel.app/watch/${slug}`;
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      // demo mode — clipboard may be unavailable, still show feedback
+    }
+    setCopyState("copied");
+    setTimeout(() => setCopyState("idle"), 2000);
+  };
+
   const resetFlow = () => {
     setStep(1);
     setPhotos([]);
@@ -99,11 +151,22 @@ export default function CreatePage() {
     setBreed("");
     setDetails("");
     setTheme("park");
+    setOccasion("");
+    setHasSecondPet(false);
+    setPet2Name("");
+    setPet2Breed("");
+    setPet2Details("");
+    setPackAdventure(false);
+    setCalmMode(false);
     setStills([]);
     setRetryUsed(false);
+    setSku("single");
+    setCharity("choose-for-me");
     setPrivacy("unlisted");
     setYoutubeConnected(false);
     setYoutubeChannelName("");
+    setCopyState("idle");
+    setShowShareModal(false);
   };
 
   return (
@@ -253,7 +316,7 @@ export default function CreatePage() {
               />
             </div>
 
-            <div className="mb-10">
+            <div className="mb-8">
               <label className="block font-semibold mb-2" style={{ fontSize: "16px", color: "#1D1D1F" }}>
                 Anything the AI should get right?
               </label>
@@ -279,11 +342,141 @@ export default function CreatePage() {
               />
             </div>
 
-            <div className="mb-10">
+            {!hasSecondPet ? (
+              <button
+                type="button"
+                onClick={() => setHasSecondPet(true)}
+                className="mb-10 text-sm font-semibold rounded-full px-5 py-2.5 border-2 inline-flex items-center gap-2"
+                style={{ borderColor: "#E5E5E5", color: "#1D1D1F", background: "#FFFFFF" }}
+              >
+                + Add another pet
+              </button>
+            ) : (
+              <div className="rounded-2xl p-6 mb-10 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold" style={{ color: "#1D1D1F" }}>Second dog</h3>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setHasSecondPet(false);
+                      setPet2Name("");
+                      setPet2Breed("");
+                      setPet2Details("");
+                      setPackAdventure(false);
+                    }}
+                    className="text-sm"
+                    style={{ color: "#EF4444", background: "none", border: "none", cursor: "pointer" }}
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="mb-4">
+                  <label className="block font-semibold mb-2" style={{ fontSize: "15px", color: "#1D1D1F" }}>
+                    Dog&apos;s name
+                  </label>
+                  <input
+                    type="text"
+                    value={pet2Name}
+                    onChange={(e) => setPet2Name(e.target.value)}
+                    placeholder="Luna, Max…"
+                    className="w-full rounded-xl px-4 py-3 outline-none border-2"
+                    style={{ fontSize: "16px", background: "#FFFFFF", borderColor: "#E5E5E5", color: "#1D1D1F" }}
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block font-semibold mb-2" style={{ fontSize: "15px", color: "#1D1D1F" }}>
+                    Breed
+                  </label>
+                  <input
+                    type="text"
+                    value={pet2Breed}
+                    onChange={(e) => setPet2Breed(e.target.value)}
+                    placeholder="Lab mix, not sure…"
+                    className="w-full rounded-xl px-4 py-3 outline-none border-2"
+                    style={{ fontSize: "16px", background: "#FFFFFF", borderColor: "#E5E5E5", color: "#1D1D1F" }}
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-2" style={{ fontSize: "15px", color: "#1D1D1F" }}>
+                    Anything the AI should get right?
+                  </label>
+                  <textarea
+                    value={pet2Details}
+                    onChange={(e) => setPet2Details(e.target.value)}
+                    rows={2}
+                    placeholder="Optional"
+                    className="w-full rounded-xl px-4 py-3 outline-none border-2"
+                    style={{ fontSize: "15px", background: "#FFFFFF", borderColor: "#E5E5E5", color: "#1D1D1F", resize: "vertical" }}
+                  />
+                </div>
+                <p className="text-xs mt-3" style={{ color: "#A1A1AA" }}>Up to 2 pets for now.</p>
+              </div>
+            )}
+
+            <div className="mb-8">
               <label className="block font-semibold mb-3" style={{ fontSize: "16px", color: "#1D1D1F" }}>
                 Pick an adventure
               </label>
               <ThemePicker selected={theme} onSelect={setTheme} />
+            </div>
+
+            <div className="mb-8">
+              <label className="block font-semibold mb-1" style={{ fontSize: "16px", color: "#1D1D1F" }}>
+                Special occasion? <span style={{ fontWeight: 400, color: "#A1A1AA" }}>(optional)</span>
+              </label>
+              <p className="text-sm mb-3" style={{ color: "#A1A1AA" }}>We&apos;ll work it into the adventure.</p>
+              <OccasionPicker selected={occasion} onSelect={setOccasion} />
+            </div>
+
+            {hasSecondPet && (
+              <div
+                className="rounded-2xl p-5 mb-8 border flex items-center justify-between gap-4"
+                style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}
+              >
+                <div>
+                  <div className="font-semibold" style={{ fontSize: "16px", color: "#1D1D1F" }}>
+                    Pack adventure
+                  </div>
+                  <p className="text-sm mt-1" style={{ color: "#6E6E73" }}>
+                    Put both pets in the same episode, together.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={packAdventure}
+                  aria-label="Pack adventure"
+                  onClick={() => setPackAdventure(!packAdventure)}
+                  style={{
+                    width: 52,
+                    height: 30,
+                    borderRadius: 9999,
+                    background: packAdventure ? "#1D1D1F" : "#E5E5E5",
+                    position: "relative",
+                    flexShrink: 0,
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: 3,
+                      left: packAdventure ? 25 : 3,
+                      width: 24,
+                      height: 24,
+                      borderRadius: 9999,
+                      background: "#FFFFFF",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                      display: "block",
+                    }}
+                  />
+                </button>
+              </div>
+            )}
+
+            <div className="mb-10">
+              <CalmModeToggle enabled={calmMode} onToggle={setCalmMode} />
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
@@ -314,8 +507,10 @@ export default function CreatePage() {
               Here&apos;s a first look
             </h1>
             <p className="mb-8" style={{ fontSize: "17px", color: "#6E6E73", lineHeight: 1.6 }}>
-              Three scenes from {displayName}&apos;s {ADVENTURE_THEMES.find((t) => t.id === theme)?.label.toLowerCase()}{" "}
-              adventure — approve them before we charge you anything.
+              Three scenes from {displayName}&apos;s{" "}
+              {ADVENTURE_THEMES.find((t) => t.id === theme)?.label.toLowerCase()}
+              {occasion ? ` ${OCCASIONS.find((o) => o.id === occasion)?.label.toLowerCase()}` : ""} adventure
+              {calmMode ? ", rendered in calm mode" : ""} — approve them before we charge you anything.
             </p>
 
             {isLoadingPreview ? (
@@ -347,23 +542,42 @@ export default function CreatePage() {
               One payment, one YouTube connection, and you choose who can watch.
             </p>
 
+            <div className="mb-6">
+              <h3 className="font-semibold mb-4" style={{ color: "#1D1D1F", fontSize: "17px" }}>
+                Choose your plan
+              </h3>
+              <PricingPicker selected={sku} onSelect={setSku} />
+            </div>
+
             <div className="rounded-2xl p-6 mb-6 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
               <h3 className="font-semibold mb-4" style={{ color: "#1D1D1F" }}>Order summary</h3>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span style={{ color: "#6E6E73" }}>Dog</span>
+                  <span style={{ color: "#6E6E73" }}>{hasSecondPet ? "Dogs" : "Dog"}</span>
                   <span className="font-medium" style={{ color: "#1D1D1F" }}>{displayName}</span>
                 </div>
                 <div className="flex justify-between">
                   <span style={{ color: "#6E6E73" }}>Adventure</span>
                   <span className="font-medium" style={{ color: "#1D1D1F" }}>
                     {ADVENTURE_THEMES.find((t) => t.id === theme)?.label}
+                    {occasion ? ` + ${OCCASIONS.find((o) => o.id === occasion)?.label}` : ""}
+                    {hasSecondPet && packAdventure ? " (pack)" : ""}
                   </span>
+                </div>
+                {calmMode && (
+                  <div className="flex justify-between">
+                    <span style={{ color: "#6E6E73" }}>Mode</span>
+                    <span className="font-medium" style={{ color: "#1D1D1F" }}>Calm mode</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span style={{ color: "#6E6E73" }}>Plan</span>
+                  <span className="font-medium" style={{ color: "#1D1D1F" }}>{selectedTier.name}</span>
                 </div>
                 <div className="flex justify-between pt-3 border-t" style={{ borderColor: "#E5E5E5" }}>
                   <span style={{ color: "#6E6E73" }}>Total</span>
                   <div className="text-right">
-                    <span className="font-bold" style={{ color: "#1D1D1F" }}>$4.99</span>
+                    <span className="font-bold" style={{ color: "#1D1D1F" }}>{selectedTier.price}</span>
                     <p className="text-xs font-medium" style={{ color: "#F97316" }}>most of this funds dog rescues</p>
                   </div>
                 </div>
@@ -380,8 +594,16 @@ export default function CreatePage() {
                 className="btn-large w-full rounded-2xl cursor-not-allowed"
                 style={{ background: "#E5E5E5", color: "#9CA3AF" }}
               >
-                Pay $4.99 — Demo mode
+                Pay {selectedTier.price} — Demo mode
               </button>
+            </div>
+
+            <div className="rounded-2xl p-6 mb-6 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+              <h3 className="font-semibold mb-1" style={{ color: "#1D1D1F" }}>Where should your donation go?</h3>
+              <p className="text-sm mb-5" style={{ color: "#6E6E73" }}>
+                Part of every order funds a dog rescue. Pick one, or let us choose.
+              </p>
+              <CharityPicker selected={charity} onSelect={setCharity} />
             </div>
 
             <div className="rounded-2xl p-6 mb-6 border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
@@ -472,7 +694,19 @@ export default function CreatePage() {
 
             <YouTubeEmbed videoId={confirmVideoId} title={`${displayName}'s sample episode`} />
 
-            <div className="rounded-2xl p-6 mt-8 mb-8 border text-left" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+            {calmMode && (
+              <div
+                className="rounded-2xl p-5 mt-8 border text-left flex items-start gap-3"
+                style={{ background: "#EFF6FF", borderColor: "#BFDBFE" }}
+              >
+                <Moon className="w-5 h-5 flex-shrink-0" style={{ color: "#2563EB", marginTop: "2px" }} />
+                <p className="text-sm" style={{ color: "#1D1D1F", lineHeight: 1.5 }}>
+                  Rendered in <strong>calm mode</strong> — gentle pacing and dog-vision colors, made for anxious pups.
+                </p>
+              </div>
+            )}
+
+            <div className="rounded-2xl p-6 mt-8 mb-6 border text-left" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
               <h3 className="font-semibold mb-3" style={{ color: "#1D1D1F" }}>How to watch on your TV</h3>
               <ol className="space-y-2 text-sm" style={{ color: "#6E6E73", lineHeight: 1.7 }}>
                 <li>1. Open the YouTube app on your TV — most smart TVs already have it.</li>
@@ -481,8 +715,40 @@ export default function CreatePage() {
               </ol>
             </div>
 
-            <p className="text-sm font-medium mb-6" style={{ color: "#F97316" }}>
-              🐾 Thank you — most of what you paid funds dog rescues.
+            <div className="rounded-2xl p-6 mb-6 border text-left" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+              <h3 className="font-semibold mb-4" style={{ color: "#1D1D1F" }}>Share {displayName}&apos;s episode</h3>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={handleCopyLink}
+                  className="rounded-2xl border-2 flex items-center justify-center gap-2 flex-1"
+                  style={{ borderColor: "#E5E5E5", color: "#1D1D1F", background: "#FFFFFF", fontSize: "15px", minHeight: "48px", fontWeight: 600 }}
+                >
+                  <Copy className="w-4 h-4" />
+                  {copyState === "copied" ? "Link copied!" : "Copy link"}
+                </button>
+                <button
+                  onClick={() => setShowShareModal(true)}
+                  className="rounded-2xl border-2 flex items-center justify-center gap-2 flex-1"
+                  style={{ borderColor: "#E5E5E5", color: "#1D1D1F", background: "#FFFFFF", fontSize: "15px", minHeight: "48px", fontWeight: 600 }}
+                >
+                  <Send className="w-4 h-4" />
+                  Send to another TV
+                </button>
+              </div>
+            </div>
+
+            <div className="mb-8 text-left">
+              <PosterCard petName={displayName} />
+            </div>
+
+            <p className="text-sm font-medium mb-1" style={{ color: "#F97316" }}>
+              🐾 Thank you — part of what you paid is going to{" "}
+              {charity === "choose-for-me" ? "a dog rescue we choose for you" : selectedCharityObj.name}.
+            </p>
+            <p className="text-sm mb-6">
+              <Link href="/impact" style={{ color: "#6E6E73" }}>
+                See the public impact ledger →
+              </Link>
             </p>
 
             <button
@@ -495,6 +761,10 @@ export default function CreatePage() {
           </div>
         )}
       </main>
+
+      {showShareModal && (
+        <SendToTvModal petName={displayName} onClose={() => setShowShareModal(false)} />
+      )}
     </div>
   );
 }
