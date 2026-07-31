@@ -91,7 +91,12 @@ export default function PhotoUploader({
         role="button"
         tabIndex={0}
         aria-label="Upload photos of your dog"
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") inputRef.current?.click(); }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault(); // Space would otherwise scroll the page
+            inputRef.current?.click();
+          }
+        }}
       >
         <input
           ref={inputRef}
@@ -114,17 +119,18 @@ export default function PhotoUploader({
         <p className="font-semibold mb-1" style={{ fontSize: "18px", color: "#1D1D1F" }}>
           {isCompressing ? "Preparing your photos…" : "Tap to add photos, or drop them here"}
         </p>
-        <p className="text-sm" style={{ color: "#A1A1AA" }}>
+        <p className="text-sm" style={{ color: "#6E6E73" }}>
           1 to {maxPhotos} photos of your dog · JPG or PNG
         </p>
       </div>
 
       {error && (
         <div
+          role="alert"
           className="flex items-center gap-2 text-sm rounded-xl px-4 py-3 border"
           style={{ background: "#FEF2F2", color: "#B91C1C", borderColor: "#FECACA" }}
         >
-          <span>⚠</span>
+          <span aria-hidden="true">⚠</span>
           {error}
         </div>
       )}
@@ -157,9 +163,17 @@ export default function PhotoUploader({
               role="button"
               tabIndex={0}
               aria-label="Add another photo"
+              onKeyDown={(e) => {
+                // This tile was focusable but had no key handler — keyboard
+                // users could reach it and never activate it.
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  inputRef.current?.click();
+                }
+              }}
             >
-              <Upload className="w-5 h-5" style={{ color: "#A1A1AA" }} />
-              <span className="text-xs" style={{ color: "#A1A1AA" }}>Add more</span>
+              <Upload className="w-5 h-5" style={{ color: "#6E6E73" }} />
+              <span className="text-xs" style={{ color: "#6E6E73" }}>Add more</span>
             </div>
           )}
         </div>

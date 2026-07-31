@@ -74,7 +74,7 @@ export default function FavoritesPage() {
                     {isSelected ? (
                       <CheckSquare className="w-5 h-5" style={{ color: "#FFFFFF", flexShrink: 0 }} />
                     ) : (
-                      <Square className="w-5 h-5" style={{ color: "#A1A1AA", flexShrink: 0 }} />
+                      <Square className="w-5 h-5" style={{ color: "#6E6E73", flexShrink: 0 }} />
                     )}
                     <span className="font-semibold" style={{ fontSize: "15px" }}>{ep.label}</span>
                   </div>
@@ -85,7 +85,7 @@ export default function FavoritesPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-xs"
-                    style={{ color: isSelected ? "#D4D4D4" : "#A1A1AA" }}
+                    style={{ color: isSelected ? "#D4D4D4" : "#6E6E73" }}
                   >
                     Watch sample <ExternalLink className="w-3 h-3" />
                   </a>
@@ -123,7 +123,7 @@ export default function FavoritesPage() {
             )}
           </button>
         )}
-        <p className="text-sm mt-4" style={{ color: "#A1A1AA" }}>
+        <p className="text-sm mt-4" style={{ color: "#6E6E73" }}>
           {selected.length} of {EPISODES.length} episodes selected
         </p>
       </section>

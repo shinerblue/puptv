@@ -129,10 +129,12 @@ export default function GiftPage() {
               </p>
 
               <div className="mb-5">
-                <label className="block font-semibold mb-2" style={{ fontSize: "15px", color: "#1D1D1F" }}>
+                <label htmlFor="gift-dog-name" className="block font-semibold mb-2" style={{ fontSize: "15px", color: "#1D1D1F" }}>
                   Dog&apos;s name
                 </label>
                 <input
+                  id="gift-dog-name"
+                  name="dogName"
                   type="text"
                   value={dogName}
                   onChange={(e) => setDogName(e.target.value)}
@@ -142,10 +144,12 @@ export default function GiftPage() {
                 />
               </div>
               <div className="mb-5">
-                <label className="block font-semibold mb-2" style={{ fontSize: "15px", color: "#1D1D1F" }}>
+                <label htmlFor="gift-recipient-name" className="block font-semibold mb-2" style={{ fontSize: "15px", color: "#1D1D1F" }}>
                   Recipient&apos;s name
                 </label>
                 <input
+                  id="gift-recipient-name"
+                  name="recipientName"
                   type="text"
                   value={recipientName}
                   onChange={(e) => setRecipientName(e.target.value)}
@@ -155,10 +159,12 @@ export default function GiftPage() {
                 />
               </div>
               <div className="mb-8">
-                <label className="block font-semibold mb-2" style={{ fontSize: "15px", color: "#1D1D1F" }}>
+                <label htmlFor="gift-recipient-email" className="block font-semibold mb-2" style={{ fontSize: "15px", color: "#1D1D1F" }}>
                   Recipient&apos;s email
                 </label>
                 <input
+                  id="gift-recipient-email"
+                  name="recipientEmail"
                   type="email"
                   value={recipientEmail}
                   onChange={(e) => setRecipientEmail(e.target.value)}

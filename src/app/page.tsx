@@ -46,6 +46,9 @@ export default function HomePage() {
             <a href="#how-it-works" className="text-sm" style={{ color: "#6E6E73" }}>
               How it works
             </a>
+            <Link href="/pricing" className="text-sm" style={{ color: "#6E6E73" }}>
+              Pricing
+            </Link>
             <Link href="/gift" className="text-sm" style={{ color: "#6E6E73" }}>
               Gifts
             </Link>
@@ -103,7 +106,7 @@ export default function HomePage() {
             Create your dog&apos;s show
             <span>→</span>
           </Link>
-          <span className="text-sm" style={{ color: "#A1A1AA" }}>
+          <span className="text-sm" style={{ color: "#6E6E73" }}>
             $4.99 to start · see the preview before you pay
           </span>
         </div>
@@ -240,6 +243,7 @@ export default function HomePage() {
           >
             Ready to see your dog on TV?
           </h2>
+          {/* #A1A1AA is intentional here — this block sits on the #1D1D1F card (6.5:1). */}
           <p
             className="text-lg mb-10 mx-auto leading-relaxed"
             style={{ color: "#A1A1AA", maxWidth: "480px" }}

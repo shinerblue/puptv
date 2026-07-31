@@ -40,7 +40,7 @@ export default function CharityPicker({ selected, onSelect }: CharityPickerProps
                 {c.name}
               </div>
               {c.location && (
-                <div style={{ fontSize: "12px", marginTop: "2px", color: isSelected ? "#D4D4D4" : "#A1A1AA" }}>
+                <div style={{ fontSize: "12px", marginTop: "2px", color: isSelected ? "#D4D4D4" : "#6E6E73" }}>
                   {c.location}
                 </div>
               )}

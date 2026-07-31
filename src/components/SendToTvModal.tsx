@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X, Send, Check, Loader2 } from "lucide-react";
 
 interface SendToTvModalProps {
@@ -12,6 +12,18 @@ export default function SendToTvModal({ petName, onClose }: SendToTvModalProps) 
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
   const name = petName || "Your dog";
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  // Escape to dismiss + move focus into the dialog on open. Without this the
+  // modal was mouse-only and left keyboard focus behind on the page under it.
+  useEffect(() => {
+    closeRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   const handleSend = () => {
     if (!email.trim()) return;
@@ -26,11 +38,15 @@ export default function SendToTvModal({ petName, onClose }: SendToTvModalProps) 
       onClick={onClose}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="send-to-tv-title"
         className="rounded-2xl p-8 w-full max-w-md relative"
         style={{ background: "#FFFFFF" }}
         onClick={(e) => e.stopPropagation()}
       >
         <button
+          ref={closeRef}
           onClick={onClose}
           aria-label="Close"
           className="absolute rounded-full flex items-center justify-center"
@@ -47,7 +63,7 @@ export default function SendToTvModal({ petName, onClose }: SendToTvModalProps) 
             >
               <Check className="w-6 h-6" style={{ color: "#10B981" }} />
             </div>
-            <p className="font-semibold mb-2" style={{ fontSize: "17px", color: "#1D1D1F" }}>
+            <p id="send-to-tv-title" className="font-semibold mb-2" style={{ fontSize: "17px", color: "#1D1D1F" }}>
               Demo: they&apos;ll get it on their channel
             </p>
             <p className="text-sm" style={{ color: "#6E6E73", lineHeight: 1.5 }}>
@@ -57,15 +73,25 @@ export default function SendToTvModal({ petName, onClose }: SendToTvModalProps) 
           </div>
         ) : (
           <>
-            <h3 className="font-bold mb-2" style={{ fontSize: "22px", color: "#1D1D1F" }}>
+            <h3 id="send-to-tv-title" className="font-bold mb-2" style={{ fontSize: "22px", color: "#1D1D1F" }}>
               Send this episode to another TV
             </h3>
             <p className="text-sm mb-5" style={{ color: "#6E6E73", lineHeight: 1.5 }}>
               Enter their email — we&apos;ll send {name}&apos;s episode straight to their channel. Demo mode:
               no email is actually sent.
             </p>
+            <label
+              htmlFor="send-to-tv-email"
+              className="block font-semibold mb-2"
+              style={{ fontSize: "15px", color: "#1D1D1F" }}
+            >
+              Their email address
+            </label>
             <input
+              id="send-to-tv-email"
+              name="recipientEmail"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="grandma@example.com"

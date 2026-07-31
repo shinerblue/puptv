@@ -36,7 +36,7 @@ export default function PricingPage() {
             >
               <div
                 className="text-xs font-semibold uppercase mb-4"
-                style={{ color: i === 2 ? "#F97316" : "#A1A1AA", letterSpacing: "0.08em" }}
+                style={{ color: i === 2 ? "#F97316" : "#6E6E73", letterSpacing: "0.08em" }}
               >
                 {tier.tagline}
               </div>
@@ -71,7 +71,7 @@ export default function PricingPage() {
           ))}
         </div>
 
-        <p className="text-center text-sm mt-10" style={{ color: "#A1A1AA" }}>
+        <p className="text-center text-sm mt-10" style={{ color: "#6E6E73" }}>
           Thirty-day refund, no questions. Every plan lets you preview the cartoon before you pay.
         </p>
       </section>

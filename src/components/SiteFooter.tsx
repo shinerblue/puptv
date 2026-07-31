@@ -44,7 +44,7 @@ export default function SiteFooter() {
             <div key={col.heading}>
               <div
                 className="text-xs font-semibold uppercase mb-4"
-                style={{ color: "#A1A1AA", letterSpacing: "0.08em" }}
+                style={{ color: "#6E6E73", letterSpacing: "0.08em" }}
               >
                 {col.heading}
               </div>
@@ -58,7 +58,7 @@ export default function SiteFooter() {
             </div>
           ))}
         </div>
-        <div className="pt-8 border-t text-center text-sm" style={{ borderColor: "#E5E5E5", color: "#A1A1AA" }}>
+        <div className="pt-8 border-t text-center text-sm" style={{ borderColor: "#E5E5E5", color: "#6E6E73" }}>
           PupTV · Dogs first, cats coming soon · Proceeds fund dog rescues
         </div>
       </div>

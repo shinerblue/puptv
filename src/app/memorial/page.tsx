@@ -34,13 +34,13 @@ export default function MemorialPage() {
           Create a memorial episode — $4.99
         </Link>
 
-        <p className="mt-16 text-sm" style={{ color: "#A1A1AA" }}>
+        <p className="mt-16 text-sm" style={{ color: "#6E6E73" }}>
           Take your time. We&apos;re here whenever you&apos;re ready.
         </p>
       </section>
 
-      <footer className="border-t py-8 text-center text-sm" style={{ borderColor: "#E5E5E5", color: "#A1A1AA" }}>
-        <Link href="/" style={{ color: "#A1A1AA" }}>
+      <footer className="border-t py-8 text-center text-sm" style={{ borderColor: "#E5E5E5", color: "#6E6E73" }}>
+        <Link href="/" style={{ color: "#6E6E73" }}>
           PupTV
         </Link>
       </footer>

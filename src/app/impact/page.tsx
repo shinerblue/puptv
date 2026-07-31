@@ -83,7 +83,8 @@ export default function ImpactPage() {
         <h2 className="font-bold mb-6 text-center" style={{ fontSize: "24px", color: "#1D1D1F" }}>
           The ledger
         </h2>
-        <div className="rounded-3xl border overflow-hidden" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+        {/* overflow-hidden clipped the 5-column ledger at 375px; scroll it instead */}
+        <div className="rounded-3xl border overflow-x-auto" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
           <table className="ledger-table">
             <thead>
               <tr>
@@ -127,7 +128,7 @@ export default function ImpactPage() {
             Your episode of <strong>{IMPACT_RECEIPT.dog}</strong> funded{" "}
             <strong>{IMPACT_RECEIPT.impact}</strong> at {IMPACT_RECEIPT.rescue}.
           </p>
-          <div className="mt-5 pt-5 border-t text-xs" style={{ borderColor: "#E5E5E5", color: "#A1A1AA" }}>
+          <div className="mt-5 pt-5 border-t text-xs" style={{ borderColor: "#E5E5E5", color: "#6E6E73" }}>
             Thank you for watching. 🐾
           </div>
         </div>
