@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PawPrint, Tv, Heart } from "lucide-react";
 import SiteFooter from "@/components/SiteFooter";
+import AccountMenu from "@/components/AccountMenu";
 import { LEDGER_STATS } from "@/lib/impact";
 
 const VALUE_PROPS = [
@@ -56,13 +57,16 @@ export default function HomePage() {
               Impact
             </Link>
           </div>
-          <Link
-            href="/create"
-            className="text-sm font-semibold px-5 py-2.5 rounded-full"
-            style={{ background: "#1D1D1F", color: "#FFFFFF" }}
-          >
-            Create your dog&apos;s show
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/create"
+              className="text-sm font-semibold px-5 py-2.5 rounded-full"
+              style={{ background: "#1D1D1F", color: "#FFFFFF" }}
+            >
+              Create your dog&apos;s show
+            </Link>
+            <AccountMenu />
+          </div>
         </div>
       </nav>
 

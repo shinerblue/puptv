@@ -26,6 +26,8 @@ import CharityPicker from "@/components/CharityPicker";
 import CalmModeToggle from "@/components/CalmModeToggle";
 import PosterCard from "@/components/PosterCard";
 import SendToTvModal from "@/components/SendToTvModal";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
+import { useAuthState } from "@/components/AuthProvider";
 import { PRICING_TIERS } from "@/lib/pricing";
 import { CHARITIES } from "@/lib/impact";
 
@@ -37,6 +39,7 @@ const MAX_UPLOAD_BYTES = 3_800_000;
 type Step = 1 | 2 | 3 | 4 | 5;
 
 export default function CreatePage() {
+  const { configured: authConfigured, user: authUser } = useAuthState();
   const [step, setStep] = useState<Step>(1);
 
   const [photos, setPhotos] = useState<CompressedPhoto[]>([]);
@@ -1207,6 +1210,32 @@ export default function CreatePage() {
             </p>
 
             <YouTubeEmbed videoId={confirmVideoId} title={`${displayName}'s sample episode`} />
+
+            {authConfigured && (
+              <div className="rounded-2xl p-6 mt-8 mb-6 border text-left" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+                {authUser ? (
+                  <>
+                    <h3 className="font-semibold mb-2" style={{ color: "#1D1D1F" }}>
+                      Signed in as {authUser.email}
+                    </h3>
+                    <p className="text-sm" style={{ color: "#6E6E73", lineHeight: 1.6 }}>
+                      Your episodes will publish to this account&apos;s YouTube channel (coming soon).
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="font-semibold mb-2" style={{ color: "#1D1D1F" }}>
+                      Want future episodes on your own channel?
+                    </h3>
+                    <p className="text-sm mb-4" style={{ color: "#6E6E73", lineHeight: 1.6 }}>
+                      Sign in with Google and we&apos;ll remember your account for when auto-publishing
+                      goes live.
+                    </p>
+                    <GoogleSignInButton callbackUrl="/create" label="Sign in with Google" />
+                  </>
+                )}
+              </div>
+            )}
 
             {calmMode && (
               <div
