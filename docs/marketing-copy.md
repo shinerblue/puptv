@@ -113,7 +113,10 @@ Cats coming soon. But dogs first.
 A: Yes. We use the photos you upload. Our artists study the shots and build Bailey to look like him—his color, markings, size, the way he stands. It's not just any dog. It's Bailey.
 
 **Q: How does it get on my TV?**
-A: We set up a YouTube channel for you. You watch it on any TV that plays YouTube—Roku, Apple TV, smart TV, even your computer plugged into the screen. No apps to install. No setup. Just a link and a bookmark.
+A: We set up your dog's own private YouTube channel. New episodes land there by themselves — no files to download, nothing to plug in. You watch it on any TV that has the YouTube app: Apple TV, Google TV, Roku, Fire TV, any smart TV, even a computer plugged into the screen. No apps to install beyond YouTube. No setup. Just a link and a bookmark.
+
+**Q: Do I need Apple TV or a special device?**
+A: No. If your TV already plays YouTube — and almost every TV made in the last several years does — that's the only device you need. No new hardware, no subscriptions beyond what you already have.
 
 **Q: What if the cartoon doesn't look right?**
 A: Tell us. Describe what's off—"his tail curls up" or "he's got a white spot on his chest." We regenerate the episode and send you the fixed version. No extra charge. We want Bailey to look like Bailey.
