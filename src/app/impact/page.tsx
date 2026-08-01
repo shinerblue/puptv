@@ -190,8 +190,9 @@ export default function ImpactPage() {
               operations filming random dogs they don&apos;t know, owned by no one in particular.
             </p>
             <p className="text-sm leading-relaxed" style={{ color: "#1D5A80" }}>
-              ToonTails is the opposite. The dog is yours, and $1 from every episode goes to
-              rescues that are saving dogs today — flat and guaranteed. That&apos;s the promise.
+              ToonTails is the opposite. The dog is yours, and $1 from every episode or portrait
+              pack goes to rescues that are saving dogs today — flat and guaranteed. That&apos;s
+              the promise.
             </p>
           </div>
         </Reveal>
