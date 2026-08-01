@@ -39,7 +39,7 @@ const STEPS = [
     badge: "badge-num badge-num-leaf",
     title: "Every pack episode stars everyone",
     desc:
-      "One adventure with the whole crew in it — and each family gets that episode on their own TV, on their own channel.",
+      "One adventure with the whole crew in it — and each family gets it on their own YouTube channel, playing on whatever TV they have.",
   },
 ];
 

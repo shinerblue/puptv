@@ -23,7 +23,7 @@ const STEPS = [
     num: "3",
     badge: "badge-num badge-num-leaf",
     title: "It lands on their TV",
-    desc: "They get one email with one link. No signup, no password, nothing to install. They click, it plays.",
+    desc: "It's their dog's own YouTube channel, so it plays on whatever TV they already have — Apple TV, Roku, Fire TV, Google TV, any smart TV. One email, one link, nothing to install.",
   },
 ];
 
@@ -87,8 +87,10 @@ export default function GiftPage() {
               the photos, you pay. That&apos;s your whole job.
             </p>
             <p className="mb-4 leading-relaxed" style={{ color: "#6B625B", fontSize: "16px" }}>
-              We make the episode on your side and email them a simple YouTube channel link. No
-              account to create. They click it, and their TV plays the new show.
+              We make the episode on your side and email them a link to their own private
+              YouTube channel. No account to create. Any TV that has YouTube — Apple TV, Roku,
+              Fire TV, Google TV, or a smart TV — plays it, so Grandma&apos;s TV is exactly the
+              right TV.
             </p>
             <p className="mb-5 leading-relaxed" style={{ color: "#6B625B", fontSize: "16px" }}>
               Every week, new episodes land on that same channel. They watch the dog live
