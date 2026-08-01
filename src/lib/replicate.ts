@@ -176,6 +176,13 @@ export async function createPrediction(
   if (res.status === 429) {
     throw new ReplicateHttpError(429, "The rendering service is at capacity.");
   }
+  if (res.status === 402) {
+    // Our Replicate account is out of credit. Not the user's fault and not
+    // a capacity blip — routes map this to a distinct, friendlier message
+    // (see ReplicateHttpError.status === 402 handling in the API routes).
+    console.error(`[replicate] create ${model} failed: HTTP 402 insufficient credit`);
+    throw new ReplicateHttpError(402, "The rendering account is out of credit.");
+  }
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
     console.error(`[replicate] create ${model} failed: HTTP ${res.status} ${detail.slice(0, 400)}`);

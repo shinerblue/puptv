@@ -95,10 +95,18 @@ export async function POST(request: NextRequest) {
         { status: 429, headers: { "Retry-After": "45" } }
       );
     }
-    const message =
-      err instanceof ReplicateHttpError
-        ? err.message
-        : "Something went wrong starting the animation.";
-    return NextResponse.json({ error: message }, { status: 502 });
+    if (err instanceof ReplicateHttpError && err.status === 402) {
+      return NextResponse.json(
+        {
+          error:
+            "The art studio is closed for a moment while we restock supplies. Please try again in a little while — nothing was charged.",
+        },
+        { status: 503 }
+      );
+    }
+    return NextResponse.json(
+      { error: "Something hiccuped on our end — nothing was charged. Try again in a minute." },
+      { status: 502 }
+    );
   }
 }

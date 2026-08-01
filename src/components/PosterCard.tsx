@@ -9,7 +9,10 @@ interface PosterCardProps {
 
 export default function PosterCard({ petName }: PosterCardProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
-  const name = petName || "Your dog";
+  // Lowercase fallback — used mid-sentence ("Put {name} on the wall", "A
+  // framed print of {name}'s cartoon scene"), where a capitalized "Your dog"
+  // placeholder reads like a typo.
+  const name = petName.trim() || "your pup";
 
   const handleOrder = () => {
     setStatus("loading");

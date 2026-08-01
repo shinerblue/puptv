@@ -93,9 +93,37 @@ export default function CreatePage() {
   const [copyState, setCopyState] = useState<"idle" | "copied">("idle");
   const [showShareModal, setShowShareModal] = useState(false);
 
-  const displayName = hasSecondPet && pet2Name.trim()
-    ? `${petName.trim() || "Your dog"} & ${pet2Name.trim()}`
-    : petName.trim() || "Your dog";
+  const petNameTrimmed = petName.trim();
+  const pet2NameTrimmed = pet2Name.trim();
+  const hasPetName = petNameTrimmed.length > 0;
+  const hasPet2Name = hasSecondPet && pet2NameTrimmed.length > 0;
+  /** True once we have a real name to build a possessive phrase from —
+   *  drives the named vs. unnamed copy branches below so we never render
+   *  the awkward "Here's Your dog" / "Share Your dog's episode" mid-sentence
+   *  capitalization bug the first user test hit when the name was skipped. */
+  const hasAnyPetName = hasPetName || hasPet2Name;
+  /** Sentence-initial / label / filename use — a proper-noun-style fallback
+   *  reads fine here because capitalization is expected at that position. */
+  const displayName = hasPet2Name
+    ? `${hasPetName ? petNameTrimmed : "Your pup"} & ${pet2NameTrimmed}`
+    : hasPetName
+    ? petNameTrimmed
+    : "Your pup";
+  /** Mid-sentence use — lowercase fallback so e.g. "Share {midName}'s
+   *  episode" reads as "Share your pup's episode" instead of the jarring
+   *  capitalized "Share Your pup's episode". Real names are never
+   *  lowercased, only the fallback word changes. */
+  const midName = hasPet2Name
+    ? `${hasPetName ? petNameTrimmed : "your pup"} & ${pet2NameTrimmed}`
+    : hasPetName
+    ? petNameTrimmed
+    : "your pup";
+  /** Raw (possibly empty) name for child components that already do their
+   *  own natural-language fallback (PreviewGate, SendToTvModal, PosterCard) —
+   *  passing the pre-resolved displayName here would make their internal
+   *  `petName || "your pup"` fallback dead code, since the prop would never
+   *  actually be empty. */
+  const rawPetName = hasPet2Name ? displayName : petNameTrimmed;
 
   const selectedTier = PRICING_TIERS.find((t) => t.id === sku) ?? PRICING_TIERS[0];
   const selectedQualityTier = QUALITY_TIERS.find((t) => t.id === tier) ?? QUALITY_TIERS[1];
@@ -119,7 +147,15 @@ export default function CreatePage() {
     setPreviewError(null);
     setLiveNotice(null);
     setStills([]);
-    const name = petName.trim() || "your dog";
+    const name = petName.trim() || "your pup";
+    // Tracks the scene-0 prediction id and whether the failure (if any)
+    // happened on scene 0 specifically — that's the only scene that
+    // charges a daily preview run (see /api/cartoonify's takeRun call).
+    // A scene-0 CREATION failure is already refunded server-side; this is
+    // for the case where scene 0 was created fine but Replicate later
+    // marked it "failed" — /api/refund-run re-verifies before refunding.
+    let scene0PredictionId: string | undefined;
+    let failedScene: number | null = null;
     try {
       const combinedDetails = [breed.trim() ? `Breed: ${breed.trim()}` : "", details.trim()]
         .filter(Boolean)
@@ -155,9 +191,11 @@ export default function CreatePage() {
         setLiveNotice(first.notice ?? null);
         return;
       }
+      scene0PredictionId = first.predictionId;
       const drawn: string[] = [];
       let cartoonRefUrl: string | undefined;
       for (let scene = 0; scene < 3; scene++) {
+        failedScene = scene;
         setPreviewProgress(`Drawing ${name}… scene ${scene + 1} of 3, about a minute`);
         let predictionId: string;
         if (scene === 0) {
@@ -186,11 +224,22 @@ export default function CreatePage() {
         setStills([...drawn]);
         if (scene === 0) cartoonRefUrl = url;
       }
+      failedScene = null;
     } catch (err) {
       setStills([]);
       setPreviewError(
         err instanceof Error ? err.message : "Something went wrong. Please try again."
       );
+      // Only refund when scene 0 itself failed after being created — that's
+      // the only scene that charged a daily run. A scene 1/2 failure means
+      // scene 0 succeeded fine, so nothing to give back.
+      if (err instanceof PredictionFailedError && failedScene === 0 && scene0PredictionId) {
+        void fetch("/api/refund-run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ predictionId: scene0PredictionId }),
+        }).catch(() => {});
+      }
     } finally {
       setIsLoadingPreview(false);
       setPreviewProgress(null);
@@ -598,15 +647,21 @@ export default function CreatePage() {
               Tell us about them
             </h1>
             <p className="mb-8" style={{ fontSize: "18px", color: "#6B625B", lineHeight: 1.6 }}>
-              {/* displayName falls back to the capitalised "Your dog", which
-                  reads wrong mid-sentence — so this line never interpolates it. */}
+              {/* Deliberately never interpolates the pet name — see displayName's
+                  doc comment above for how the named/unnamed branching works
+                  everywhere else once a name (or its absence) needs to read
+                  naturally in a sentence. */}
               A name, a breed, and anything the drawing needs to get right. This is the step
               that turns a generic cartoon dog into yours.
             </p>
 
             <div className="mb-6">
-              <label htmlFor="pet-name" className="block font-semibold mb-2" style={{ fontSize: "16px", color: "#1D1D1F" }}>
-                Dog&apos;s name
+              {/* Made more prominent (accent color + parenthetical) than the
+                  breed/details fields below — skipping this is what produced
+                  the awkward "Here's Your dog" copy in the first user test,
+                  so it's worth nudging people to actually fill it in. */}
+              <label htmlFor="pet-name" className="block font-semibold mb-2" style={{ fontSize: "16px", color: "#C2410C" }}>
+                Your dog&apos;s name (we use it in the show!)
               </label>
               <input
                 id="pet-name"
@@ -858,10 +913,10 @@ export default function CreatePage() {
               className="font-bold mb-3 mt-2"
               style={{ fontSize: "clamp(28px,5vw,38px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
             >
-              Here&apos;s {displayName}
+              {hasAnyPetName ? `Here's ${displayName}!` : "Here's your pup!"}
             </h1>
             <p className="mb-8" style={{ fontSize: "18px", color: "#6B625B", lineHeight: 1.6 }}>
-              Three scenes from {displayName}&apos;s{" "}
+              Three scenes from {hasAnyPetName ? `${displayName}'s` : "the"}{" "}
               {ADVENTURE_THEMES.find((t) => t.id === theme)?.label.toLowerCase()}
               {occasion ? ` ${OCCASIONS.find((o) => o.id === occasion)?.label.toLowerCase()}` : ""} adventure
               {calmMode ? ", drawn in calm mode" : ""}. Have a good look before you decide —
@@ -870,7 +925,20 @@ export default function CreatePage() {
 
             {isLoadingPreview ? (
               <div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                {/* Status card comes first — on a phone this is the only
+                    thing visible without scrolling past the (still-empty)
+                    scene placeholders below, which was the tester's explicit
+                    complaint from the first user test. */}
+                <div className="card-tint p-8 text-center mb-8">
+                  <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: "#C2410C" }} />
+                  <p className="font-semibold" style={{ color: "#1D1D1F", fontSize: "17px" }}>
+                    {previewProgress ?? `Drawing ${midName}'s cartoon scenes…`}
+                  </p>
+                  <p className="text-sm mt-2" style={{ color: "#6B625B" }}>
+                    {previewWaitMsg ?? "Worth the wait, we promise. Stay on this page."}
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {[0, 1, 2].map((i) => (
                     <div key={i} className="tile aspect-square relative">
                       {stills[i] ? (
@@ -890,15 +958,6 @@ export default function CreatePage() {
                       )}
                     </div>
                   ))}
-                </div>
-                <div className="card-tint p-8 text-center">
-                  <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: "#C2410C" }} />
-                  <p className="font-semibold" style={{ color: "#1D1D1F", fontSize: "17px" }}>
-                    {previewProgress ?? `Drawing ${displayName}'s cartoon scenes…`}
-                  </p>
-                  <p className="text-sm mt-2" style={{ color: "#6B625B" }}>
-                    {previewWaitMsg ?? "Worth the wait, we promise. Stay on this page."}
-                  </p>
                 </div>
               </div>
             ) : previewError ? (
@@ -1173,13 +1232,22 @@ export default function CreatePage() {
                   className="font-bold mb-3"
                   style={{ fontSize: "clamp(28px,5vw,38px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
                 >
-                  Animating {displayName}&apos;s episode
+                  Animating {midName}&apos;s episode
                 </h1>
                 <p className="mb-8" style={{ fontSize: "18px", color: "#6B625B", lineHeight: 1.6 }}>
                   Each scene takes about 3–6 minutes to bring to life. You can close this page —
                   we&apos;ll pick up exactly where you left off when you come back.
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                {/* Status card first, scene tiles after — same fix as the
+                    stills-preview step: on a phone this is the first thing
+                    visible instead of a wall of "Waiting" placeholders. */}
+                <div className="card-tint p-6 mb-8">
+                  <Loader2 className="w-6 h-6 animate-spin mx-auto mb-3" style={{ color: "#C2410C" }} />
+                  <p className="text-sm font-semibold" style={{ color: "#C2410C" }}>
+                    {clipWaitMsg ?? `Animating scene ${Math.min(clipScene, 2) + 1} of 3…`}
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {[0, 1, 2].map((i) => (
                     <div key={i} className="tile relative aspect-video">
                       {stills[i] && (
@@ -1208,9 +1276,6 @@ export default function CreatePage() {
                     </div>
                   ))}
                 </div>
-                <p className="text-sm font-semibold" style={{ color: "#C2410C" }}>
-                  {clipWaitMsg ?? `Animating scene ${Math.min(clipScene, 2) + 1} of 3…`}
-                </p>
               </div>
             )}
 
@@ -1286,7 +1351,7 @@ export default function CreatePage() {
                 {/* Parity with the demo confirmation: sharing and the poster
                     offer were previously only reachable in demo mode. */}
                 <div className="card-warm p-6 mt-8 text-left">
-                  <h3 className="font-semibold mb-4" style={{ fontSize: "18px", color: "#1D1D1F" }}>Share {displayName}&apos;s episode</h3>
+                  <h3 className="font-semibold mb-4" style={{ fontSize: "18px", color: "#1D1D1F" }}>Share {midName}&apos;s episode</h3>
                   <div className="flex flex-col sm:flex-row gap-3">
                     <button
                       onClick={handleCopyLink}
@@ -1308,7 +1373,7 @@ export default function CreatePage() {
                 </div>
 
                 <div className="mt-6 text-left">
-                  <PosterCard petName={displayName} />
+                  <PosterCard petName={rawPetName} />
                 </div>
 
                 <p className="text-sm font-medium mt-8 mb-1 text-center" style={{ color: "#C2410C" }}>
@@ -1396,12 +1461,12 @@ export default function CreatePage() {
               <ol className="space-y-2 text-sm" style={{ color: "#6B625B", lineHeight: 1.7 }}>
                 <li>1. Open the YouTube app on your TV — most smart TVs already have it.</li>
                 <li>2. Sign in with the same Google account you just connected.</li>
-                <li>3. Look under &ldquo;Your channels&rdquo; for {displayName}&apos;s channel.</li>
+                <li>3. Look under &ldquo;Your channels&rdquo; for {midName}&apos;s channel.</li>
               </ol>
             </div>
 
             <div className="card-warm p-6 mb-6 text-left">
-              <h3 className="font-semibold mb-4" style={{ fontSize: "18px", color: "#1D1D1F" }}>Share {displayName}&apos;s episode</h3>
+              <h3 className="font-semibold mb-4" style={{ fontSize: "18px", color: "#1D1D1F" }}>Share {midName}&apos;s episode</h3>
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={handleCopyLink}
@@ -1423,7 +1488,7 @@ export default function CreatePage() {
             </div>
 
             <div className="mb-8 text-left">
-              <PosterCard petName={displayName} />
+              <PosterCard petName={rawPetName} />
             </div>
 
             <p className="text-sm font-medium mb-1" style={{ color: "#C2410C" }}>
@@ -1447,7 +1512,7 @@ export default function CreatePage() {
       </main>
 
       {showShareModal && (
-        <SendToTvModal petName={displayName} onClose={() => setShowShareModal(false)} />
+        <SendToTvModal petName={rawPetName} onClose={() => setShowShareModal(false)} />
       )}
     </div>
   );

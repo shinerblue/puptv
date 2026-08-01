@@ -9,7 +9,7 @@ import {
   isAllowedOutputUrl,
   isLiveEnabled,
 } from "@/lib/replicate";
-import { clientIpFrom, takeRun } from "@/lib/rateLimit";
+import { clientIpFrom, refundRun, takeRun } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -131,16 +131,30 @@ export async function POST(request: NextRequest) {
     });
     return NextResponse.json({ success: true, demo: false, predictionId: prediction.id });
   } catch (err) {
+    // The daily preview slot was charged above (scene 0 only, via takeRun).
+    // If we're bailing out here the prediction never actually started, so
+    // give the slot back — this is the fix for the first user test burning
+    // all 3 daily previews on a Replicate 402 (account out of credit).
+    if (sceneIndex === 0) refundRun(clientIpFrom(request.headers));
+
     if (err instanceof ReplicateHttpError && err.status === 429) {
       return NextResponse.json(
         { error: "The art studio is at capacity right now.", retryAfterSeconds: 45 },
         { status: 429, headers: { "Retry-After": "45" } }
       );
     }
-    const message =
-      err instanceof ReplicateHttpError
-        ? err.message
-        : "Something went wrong starting the drawing.";
-    return NextResponse.json({ error: message }, { status: 502 });
+    if (err instanceof ReplicateHttpError && err.status === 402) {
+      return NextResponse.json(
+        {
+          error:
+            "The art studio is closed for a moment while we restock supplies. Please try again in a little while — nothing was charged.",
+        },
+        { status: 503 }
+      );
+    }
+    return NextResponse.json(
+      { error: "Something hiccuped on our end — nothing was charged. Try again in a minute." },
+      { status: 502 }
+    );
   }
 }

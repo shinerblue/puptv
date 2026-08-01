@@ -11,7 +11,10 @@ interface SendToTvModalProps {
 export default function SendToTvModal({ petName, onClose }: SendToTvModalProps) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
-  const name = petName || "Your dog";
+  // Lowercase fallback — this string only ever appears mid-sentence
+  // ("we'll send {name}'s episode..."), where a capitalized "Your dog"
+  // placeholder reads like a typo.
+  const name = petName.trim() || "your pup";
   const closeRef = useRef<HTMLButtonElement>(null);
 
   // Escape to dismiss + move focus into the dialog on open. Without this the

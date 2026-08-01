@@ -11,7 +11,10 @@ interface PreviewGateProps {
 }
 
 export default function PreviewGate({ stills, petName, onApprove, onRetry, retryUsed }: PreviewGateProps) {
-  const name = petName || "Your dog";
+  // Lowercase fallback so "Does this look like your pup?" / "That's your
+  // pup — keep going" read naturally when no name was given — the parent
+  // passes the raw (possibly empty) petName here on purpose, see create/page.tsx.
+  const name = petName.trim() || "your pup";
   return (
     <div>
       {/* Deliberately not tilted like the marketing tiles: this is the moment

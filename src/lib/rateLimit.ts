@@ -58,6 +58,31 @@ export function takeClip(ip: string): GateResult {
   return { allowed: true };
 }
 
+/**
+ * Refund one preview run that was charged by takeRun() but didn't actually
+ * produce anything for the user. Two call sites:
+ *
+ *  1. /api/cartoonify's catch block — a scene-0 prediction CREATION
+ *     failure (402 insufficient credit, 5xx, network error). Unconditionally
+ *     safe to refund: the run never started.
+ *  2. /api/refund-run — a scene-0 prediction that WAS created but later
+ *     resolved to a terminal Replicate status ("failed"/"canceled"). That
+ *     route re-verifies the prediction's status against Replicate before
+ *     calling this, so a client can't fabricate a prediction id to farm
+ *     free runs.
+ *
+ * Only touches TODAY's bucket (via a plain get, not bucketFor's
+ * create-if-missing) — a bucket from a previous day, or one evicted by
+ * MAX_TRACKED_IPS, simply has nothing to refund. That's fine: the goal is
+ * "don't lock a user out over our own failure," not billing-grade accounting.
+ */
+export function refundRun(ip: string): void {
+  const day = today();
+  const bucket = ipBuckets.get(ip);
+  if (bucket && bucket.day === day && bucket.runs > 0) bucket.runs -= 1;
+  if (globalBucket.day === day && globalBucket.runs > 0) globalBucket.runs -= 1;
+}
+
 /** Client IP as seen through Vercel's proxy headers. */
 export function clientIpFrom(headers: Headers): string {
   const forwarded = headers.get("x-forwarded-for");
