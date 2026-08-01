@@ -7,13 +7,14 @@ import { PRICING_TIERS } from "@/lib/pricing";
 
 /** Kept alongside PRICING_TIERS so the copy stays in one place. */
 const CARD_ART = [
+  { src: "/demo/poster-art.jpg", alt: "Cartoon portrait of Dutch, print-ready" },
   { src: "/demo/still-2.jpg", alt: "Cartoon of Dutch trotting through a park with a stick" },
   { src: "/demo/birthday.jpg", alt: "Cartoon of Dutch in a party hat beside a birthday cake" },
   { src: "/demo/crossover.jpg", alt: "Cartoon of Dutch playing tug-of-war with a golden retriever" },
 ];
 
-/** Index 1 (the three-pack) is the one most people land on. */
-const MOST_LOVED = 1;
+/** Index 2 (the three-pack) is the one most people land on. */
+const MOST_LOVED = 2;
 
 export default function PricingPage() {
   return (
@@ -38,8 +39,8 @@ export default function PricingPage() {
         </p>
       </section>
 
-      <section className="max-w-5xl mx-auto px-6 pb-20">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 items-stretch">
+      <section className="max-w-6xl mx-auto px-6 pb-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 items-stretch">
           {PRICING_TIERS.map((tier, i) => {
             const featured = i === MOST_LOVED;
             return (
@@ -152,8 +153,9 @@ export default function PricingPage() {
               </div>
             </div>
             <p className="text-sm mt-5 leading-relaxed" style={{ color: "#6B625B" }}>
-              The rescue pledge is flat and guaranteed on every plan — $1.00 for a single episode,
-              $2.50 for the three-pack, $5.00 for the season — no matter which motion quality you pick.
+              The rescue pledge is flat and guaranteed on every plan — $1.00 for a portrait pack or a
+              single episode, $2.50 for the three-pack, $5.00 for the season — no matter which motion
+              quality you pick.
             </p>
           </div>
         </Reveal>

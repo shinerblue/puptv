@@ -51,6 +51,9 @@ Just grandparents and their granddog's cartoon.
 
 ## Pricing
 
+**Portrait Pack — $2.99**
+Three cartoon portraits of your pet, as digital downloads, print-ready. Same art studio as every episode, no video, no waiting on animation. $1 to dog rescues, like everything we make.
+
 **Single Episode — $4.99**
 About a minute of continuous cartoon, built to loop seamlessly for as long as Bailey wants to watch. Good for testing it out. See what your dog looks like as a cartoon hero.
 
@@ -129,3 +132,9 @@ A: You don't need premium. The channel is free to watch. There may be ads on som
 
 **Q: What about cats? Can I make a cartoon with my cat?**
 A: Not yet. Dogs first. But cats are coming soon. If you want to sign up for the cat launch, we'll add you to the list.
+
+**Q: I don't want a video — can I just get the artwork?**
+A: Yes. A Portrait Pack ($2.99) gets you three cartoon portraits of your pet as print-ready digital downloads — no video, no waiting on animation. It's the same art studio, just the stills on their own. $1 from every Portrait Pack goes to dog rescues, same as everything else we make.
+
+**Q: Do you make episodes for a dog who has passed away?**
+A: Yes — we call these celebration-of-life episodes, made with the same care as any other episode, from the photos you already have. If your dog has ever starred in a ToonTails episode, or you've made one for any pet, a celebration-of-life episode is free. Otherwise it's $4.99, the same as a single episode. See [/memorial](/memorial).

@@ -15,7 +15,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "ToonTails — Your dog's own TV show, on your TV",
   description:
-    "Upload a few photos of your dog and get a cartoon adventure series that publishes straight to your YouTube channel — automatically. Dogs first, cats coming soon. $1 from every episode goes to dog rescues.",
+    "Upload a few photos of your dog and get a cartoon adventure series that publishes straight to your YouTube channel — automatically. Dogs first, cats coming soon. $1 from every episode or portrait pack goes to dog rescues.",
   keywords: ["dog tv", "pet video", "cartoon dog", "AI video", "dog charity", "youtube", "pet tv", "toontails"],
 };
 

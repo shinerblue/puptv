@@ -3,7 +3,7 @@
  * checkout step (PricingPicker) and the standalone /pricing page.
  */
 export interface PricingTier {
-  id: "single" | "three-pack" | "season";
+  id: "portrait-pack" | "single" | "three-pack" | "season";
   name: string;
   price: string;
   priceValue: number;
@@ -12,9 +12,22 @@ export interface PricingTier {
   features: string[];
   /** Flat, guaranteed rescue pledge for this plan — never "profits if any." */
   pledge: string;
+  /** True for stills-only SKUs — the create flow skips video generation entirely. */
+  stillsOnly?: boolean;
 }
 
 export const PRICING_TIERS: PricingTier[] = [
+  {
+    id: "portrait-pack",
+    name: "Portrait Pack",
+    price: "$2.99",
+    priceValue: 2.99,
+    tagline: "Three cartoon portraits, ready to print",
+    desc: "Three cartoon portraits of your pet as digital downloads — print-ready, no video, no waiting on animation.",
+    features: ["3 cartoon portraits, print-ready digital downloads", "Yours to keep and print anywhere", "$1.00 goes to dog rescues"],
+    pledge: "$1.00",
+    stillsOnly: true,
+  },
   {
     id: "single",
     name: "Single Episode",

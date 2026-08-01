@@ -10,6 +10,11 @@ export const OCCASIONS: Occasion[] = [
   { id: "birthday", label: "Birthday", emoji: "🎂" },
   { id: "christmas", label: "Christmas", emoji: "🎄" },
   { id: "halloween", label: "Halloween", emoji: "🎃" },
+  { id: "thanksgiving", label: "Thanksgiving", emoji: "🦃" },
+  { id: "easter", label: "Easter", emoji: "🐰" },
+  { id: "valentines", label: "Valentine's", emoji: "💝" },
+  { id: "july4th", label: "Fourth of July", emoji: "🎆" },
+  { id: "newyear", label: "New Year", emoji: "🎉" },
 ];
 
 interface OccasionPickerProps {
@@ -22,7 +27,7 @@ interface OccasionPickerProps {
 export default function OccasionPicker({ selected, onSelect, labelledBy }: OccasionPickerProps) {
   return (
     <div
-      className="grid grid-cols-2 sm:grid-cols-3 gap-3"
+      className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"
       role="radiogroup"
       aria-labelledby={labelledBy}
       aria-label={labelledBy ? undefined : "Special occasion"}

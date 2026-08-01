@@ -55,6 +55,26 @@ export const THEME_SCENES: Record<string, readonly [string, string, string]> = {
   ],
 };
 
+/**
+ * Optional occasion flourish, blended into whichever adventure theme the
+ * owner picked ("we'll work it into the adventure" — see OccasionPicker).
+ * One tasteful line per occasion, appended to the scene description.
+ *
+ * July 4th is deliberately soft: many dogs are afraid of fireworks, and the
+ * buyer picking this occasion already knows it — so the scene keeps them
+ * distant and quiet rather than a loud, close finale.
+ */
+export const OCCASION_SCENES: Record<string, string> = {
+  birthday: "wearing a small party hat beside a candle-topped cupcake, with balloons and confetti nearby",
+  christmas: "amid soft falling snow and twinkling string lights, with a wrapped present close by",
+  halloween: "wearing a cute, comfortable pumpkin costume among carved jack-o-lanterns and autumn leaves",
+  thanksgiving: "at a cozy autumn family dinner, eyeing a roasted turkey on the table",
+  easter: "hunting for pastel eggs in a blooming spring garden",
+  valentines: "surrounded by heart-shaped balloons and a small box of treats",
+  july4th: "at a backyard picnic with red-white-and-blue bunting, distant and soft fireworks glowing gently in the evening sky far behind",
+  newyear: "amid drifting confetti under string lights, beside a glowing midnight countdown clock",
+};
+
 /** Kling negative prompt — from the reference pipeline, plus "long tail"
  *  (the fix that produced the verified breed-correct Dutch renders). */
 export const VIDEO_NEGATIVE_PROMPT =
@@ -79,9 +99,11 @@ export function isLiveEnabled(): boolean {
   return Boolean(process.env.REPLICATE_API_TOKEN) && process.env.PUPTV_LIVE !== "off";
 }
 
-export function sceneDescription(theme: string, sceneIndex: number): string {
+export function sceneDescription(theme: string, sceneIndex: number, occasion?: string): string {
   const scenes = THEME_SCENES[theme] ?? THEME_SCENES.park;
-  return scenes[sceneIndex] ?? scenes[0];
+  const scene = scenes[sceneIndex] ?? scenes[0];
+  const flourish = occasion ? OCCASION_SCENES[occasion] : undefined;
+  return flourish ? `${scene}, ${flourish}` : scene;
 }
 
 /** Identity-preserving still prompt, exactly like the reference script. */
@@ -90,9 +112,11 @@ export function buildStillPrompt(opts: {
   details: string;
   theme: string;
   sceneIndex: number;
+  /** Optional occasion id (see OCCASION_SCENES) blended into the scene. */
+  occasion?: string;
 }): string {
-  const { petName, details, theme, sceneIndex } = opts;
-  const scene = sceneDescription(theme, sceneIndex);
+  const { petName, details, theme, sceneIndex, occasion } = opts;
+  const scene = sceneDescription(theme, sceneIndex, occasion);
   let lead: string;
   if (sceneIndex === 0) {
     lead = IDENTITY_PROMPT;

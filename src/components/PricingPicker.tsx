@@ -9,7 +9,7 @@ interface PricingPickerProps {
 
 export default function PricingPicker({ selected, onSelect }: PricingPickerProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4" role="radiogroup" aria-label="Choose your plan">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4" role="radiogroup" aria-label="Choose your plan">
       {PRICING_TIERS.map((tier) => {
         const isSelected = selected === tier.id;
         return (

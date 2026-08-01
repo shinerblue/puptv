@@ -29,7 +29,7 @@ const VALUE_PROPS = [
     well: "icon-well icon-well-leaf",
     title: "Every episode feeds a rescue",
     desc:
-      "$1 from every episode goes straight to a dog rescue — flat and guaranteed, not “profits if there are any.” The rest covers making your video, payment processing, and running ToonTails, small family team included — and we publish the running numbers, down to the dollar.",
+      "$1 from every episode or portrait pack goes straight to a dog rescue — flat and guaranteed, not “profits if there are any.” The rest covers making your video, payment processing, and running ToonTails, small family team included — and we publish the running numbers, down to the dollar.",
   },
 ];
 
@@ -133,8 +133,8 @@ const SHOWCASE: ShowcaseItem[] = [
   {
     href: "/create",
     kicker: "Occasions",
-    title: "Birthdays, holidays, gotcha days",
-    desc: "Tell us the occasion and we write it into the story — party hats, cake, confetti, all of it.",
+    title: "Birthdays and every holiday",
+    desc: "Tell us the occasion and we write it into the story — birthdays, Christmas, Halloween, Thanksgiving, Easter, Valentine's, the Fourth, New Year's, and more.",
     cta: "Add an occasion",
     img: "/demo/birthday.jpg",
     video: "/videos/birthday.mp4",
@@ -172,17 +172,17 @@ const SHOWCASE: ShowcaseItem[] = [
   },
   {
     href: "/create",
-    kicker: "Posters",
+    kicker: "Portraits & posters",
     title: "Their cartoon self, on your wall",
-    desc: "The same drawing that stars in the episode, printed big enough to hang in the hallway.",
-    cta: "See the poster",
+    desc: "Just want the art? A Portrait Pack is three cartoon portraits as print-ready downloads for $2.99 — no video required. Or print the same art big enough for the hallway.",
+    cta: "See the portraits",
     img: "/demo/poster-art.jpg",
     alt: "Framed poster of Dutch's cartoon portrait",
   },
   {
     href: "/impact",
     kicker: "Every episode gives back",
-    title: "$1 from every episode, to a dog rescue",
+    title: "$1 from every episode or portrait pack, to a dog rescue",
     desc: "Pledged on every single order and published in a running public ledger — down to the dollar.",
     cta: "Read the ledger",
     Icon: Heart,
@@ -512,11 +512,11 @@ export default function HomePage() {
 
           <Reveal>
             <p className="text-center mt-12" style={{ color: "#6B625B", fontSize: "15px" }}>
-              Lost a dog? We make{" "}
+              We also make{" "}
               <Link href="/memorial" style={{ color: "#C2410C", fontWeight: 600 }}>
                 memorial episodes
               </Link>{" "}
-              too — quietly, and with care.
+              — a celebration of a life well-loved. Free for ToonTails families.
             </p>
           </Reveal>
         </div>

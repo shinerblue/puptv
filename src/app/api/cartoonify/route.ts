@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   STILL_MODEL,
   THEME_SCENES,
+  OCCASION_SCENES,
   ReplicateHttpError,
   buildStillPrompt,
   createPrediction,
@@ -87,6 +88,9 @@ export async function POST(request: NextRequest) {
   const theme =
     typeof themeRaw === "string" && themeRaw in THEME_SCENES ? themeRaw : "park";
   const details = typeof body.details === "string" ? body.details.slice(0, 600).trim() : "";
+  const occasionRaw = body.occasion;
+  const occasion =
+    typeof occasionRaw === "string" && occasionRaw in OCCASION_SCENES ? occasionRaw : undefined;
   const cartoonRefUrl = typeof body.cartoonRefUrl === "string" ? body.cartoonRefUrl : undefined;
 
   if (sceneIndex > 0 && (!cartoonRefUrl || !isAllowedOutputUrl(cartoonRefUrl))) {
@@ -113,6 +117,7 @@ export async function POST(request: NextRequest) {
     details,
     theme,
     sceneIndex,
+    occasion,
   });
   const imageInput = sceneIndex === 0 ? photos : [...photos, cartoonRefUrl as string];
 

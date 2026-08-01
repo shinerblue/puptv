@@ -100,6 +100,9 @@ export default function CreatePage() {
   const selectedTier = PRICING_TIERS.find((t) => t.id === sku) ?? PRICING_TIERS[0];
   const selectedQualityTier = QUALITY_TIERS.find((t) => t.id === tier) ?? QUALITY_TIERS[1];
   const selectedCharityObj = CHARITIES.find((c) => c.id === charity) ?? CHARITIES[CHARITIES.length - 1];
+  /** Portrait Pack is stills-only — the three preview stills ARE the product,
+   *  so checkout skips video generation and YouTube entirely. */
+  const isPortraitPack = selectedTier.stillsOnly === true;
 
   const handlePhotosSelected = useCallback((p: CompressedPhoto[]) => setPhotos(p), []);
 
@@ -167,6 +170,7 @@ export default function CreatePage() {
               petName,
               details: combinedDetails,
               theme,
+              occasion,
               sceneIndex: scene,
               cartoonRefUrl,
             },
@@ -331,6 +335,13 @@ export default function CreatePage() {
     setCheckoutError(null);
     try {
       await fetch("/api/checkout", { method: "POST" });
+      if (isPortraitPack) {
+        // The three preview stills already ARE the product — nothing left
+        // to animate or publish. Demo stills stay demo stills; live stills
+        // are the real Replicate renders the user already approved.
+        setStep(5);
+        return;
+      }
       if (isLiveStillSet(stills)) {
         // Live mode: payment stays demo, but the clips are real.
         clearClipJob();
@@ -973,10 +984,12 @@ export default function CreatePage() {
                   <span style={{ color: "#6B625B" }}>Plan</span>
                   <span className="font-medium" style={{ color: "#1D1D1F" }}>{selectedTier.name}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span style={{ color: "#6B625B" }}>Quality</span>
-                  <span className="font-medium" style={{ color: "#1D1D1F" }}>{selectedQualityTier.name}</span>
-                </div>
+                {!isPortraitPack && (
+                  <div className="flex justify-between">
+                    <span style={{ color: "#6B625B" }}>Quality</span>
+                    <span className="font-medium" style={{ color: "#1D1D1F" }}>{selectedQualityTier.name}</span>
+                  </div>
+                )}
                 <div className="flex justify-between pt-3 border-t" style={{ borderColor: "#F0E2D2" }}>
                   <span style={{ color: "#6B625B" }}>Total</span>
                   <div className="text-right">
@@ -1008,44 +1021,55 @@ export default function CreatePage() {
               <CharityPicker selected={charity} onSelect={setCharity} />
             </div>
 
-            <div className="card-warm p-6 mb-6">
-              <h3 className="font-semibold mb-2" style={{ fontSize: "18px", color: "#1D1D1F" }}>Connect your YouTube account</h3>
-              <p className="text-sm mb-4" style={{ color: "#6B625B", lineHeight: 1.6 }}>
-                This is the whole trick: once you connect your account, every new episode shows up
-                on your dog&apos;s own YouTube channel by itself. No files, no apps, nothing to remember.
-              </p>
-              {youtubeConnected ? (
-                <div
-                  className="flex items-center gap-2 rounded-xl px-4 py-3"
-                  style={{ background: "#ECFDF5", color: "#047857" }}
-                >
-                  <Check className="w-5 h-5" />
-                  <span className="text-sm font-medium">Connected as {youtubeChannelName}</span>
-                </div>
-              ) : (
-                <button
-                  onClick={handleConnectYoutube}
-                  disabled={isConnectingYoutube}
-                  className="btn-pill btn-soft btn-block"
-                  style={{ background: "#C50000", color: "#FFFFFF" }}
-                >
-                  {isConnectingYoutube ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <Tv className="w-5 h-5" />
-                  )}
-                  {isConnectingYoutube ? "Connecting…" : "Connect YouTube"}
-                </button>
-              )}
-            </div>
+            {!isPortraitPack && (
+              <div className="card-warm p-6 mb-6">
+                <h3 className="font-semibold mb-2" style={{ fontSize: "18px", color: "#1D1D1F" }}>Connect your YouTube account</h3>
+                <p className="text-sm mb-4" style={{ color: "#6B625B", lineHeight: 1.6 }}>
+                  This is the whole trick: once you connect your account, every new episode shows up
+                  on your dog&apos;s own YouTube channel by itself. No files, no apps, nothing to remember.
+                </p>
+                {youtubeConnected ? (
+                  <div
+                    className="flex items-center gap-2 rounded-xl px-4 py-3"
+                    style={{ background: "#ECFDF5", color: "#047857" }}
+                  >
+                    <Check className="w-5 h-5" />
+                    <span className="text-sm font-medium">Connected as {youtubeChannelName}</span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleConnectYoutube}
+                    disabled={isConnectingYoutube}
+                    className="btn-pill btn-soft btn-block"
+                    style={{ background: "#C50000", color: "#FFFFFF" }}
+                  >
+                    {isConnectingYoutube ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Tv className="w-5 h-5" />
+                    )}
+                    {isConnectingYoutube ? "Connecting…" : "Connect YouTube"}
+                  </button>
+                )}
+              </div>
+            )}
 
-            <div className="card-warm p-6 mb-8">
-              <h3 className="font-semibold mb-1" style={{ fontSize: "18px", color: "#1D1D1F" }}>Who can watch?</h3>
-              <p className="text-sm mb-5" style={{ color: "#6B625B" }}>
-                You can change this later. It only affects this episode.
-              </p>
-              <PrivacyPicker selected={privacy} onSelect={setPrivacy} />
-            </div>
+            {!isPortraitPack && (
+              <div className="card-warm p-6 mb-8">
+                <h3 className="font-semibold mb-1" style={{ fontSize: "18px", color: "#1D1D1F" }}>Who can watch?</h3>
+                <p className="text-sm mb-5" style={{ color: "#6B625B" }}>
+                  You can change this later. It only affects this episode.
+                </p>
+                <PrivacyPicker selected={privacy} onSelect={setPrivacy} />
+              </div>
+            )}
+
+            {isPortraitPack && (
+              <div className="card-tint p-5 mb-8 text-sm" style={{ color: "#6B625B" }}>
+                No video, no YouTube needed — a Portrait Pack is just the three portraits you already
+                previewed, ready to download.
+              </div>
+            )}
 
             {checkoutError && (
               <div
@@ -1066,12 +1090,12 @@ export default function CreatePage() {
               </button>
               <button
                 onClick={handleFinishDemoCheckout}
-                disabled={!youtubeConnected || isFinishing}
+                disabled={(!isPortraitPack && !youtubeConnected) || isFinishing}
                 className="btn-pill btn-soft btn-ink flex-[2]"
               >
                 {isFinishing
                   ? "Finishing up…"
-                  : youtubeConnected
+                  : isPortraitPack || youtubeConnected
                   ? "Complete demo order →"
                   : "Connect YouTube to continue"}
               </button>
@@ -1079,7 +1103,69 @@ export default function CreatePage() {
           </div>
         )}
 
-        {step === 5 && clipPhase !== "none" && (
+        {step === 5 && isPortraitPack && (
+          <div className="max-w-2xl mx-auto text-center">
+            <div
+              className="icon-well icon-well-leaf mx-auto mb-6 pop-in"
+              style={{ width: 80, height: 80, borderRadius: 9999 }}
+            >
+              <Check className="w-8 h-8" style={{ color: "#047857" }} />
+            </div>
+            <h1
+              className="font-bold mb-3"
+              style={{ fontSize: "clamp(28px,5vw,38px)", letterSpacing: "-0.02em", color: "#1D1D1F" }}
+            >
+              Your three portraits are ready to download
+            </h1>
+            <p className="mb-8" style={{ fontSize: "17px", color: "#6B625B", lineHeight: 1.6 }}>
+              {isLiveStillSet(stills)
+                ? "Print-ready digital downloads of the same three portraits you just approved."
+                : "Demo mode: these are sample portraits — live downloads work the same way once generation is live."}
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+              {stills.map((src, i) => (
+                <div key={i} className="tile tile-hover aspect-square">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={src}
+                    alt={`${displayName}'s portrait ${i + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
+              {stills.map((src, i) => (
+                <a
+                  key={src + i}
+                  href={src}
+                  download={`${displayName.replace(/\s+/g, "-").toLowerCase()}-portrait-${i + 1}.jpg`}
+                  className="btn-pill-sm btn-ink"
+                >
+                  Download portrait {i + 1}
+                </a>
+              ))}
+            </div>
+
+            <p className="text-sm font-medium mb-1" style={{ color: "#C2410C" }}>
+              🐾 Thank you — {selectedTier.pledge} of what you paid is going to{" "}
+              {charity === "choose-for-me" ? "a dog rescue we choose for you" : selectedCharityObj.name}.
+            </p>
+            <p className="text-sm mb-8">
+              <Link href="/impact" style={{ color: "#6B625B" }}>
+                See the public impact ledger →
+              </Link>
+            </p>
+
+            <button onClick={resetFlow} className="btn-pill btn-ink">
+              Create another episode
+            </button>
+          </div>
+        )}
+
+        {step === 5 && !isPortraitPack && clipPhase !== "none" && (
           <div className="max-w-2xl mx-auto">
             {clipPhase === "generating" && (
               <div className="text-center">
@@ -1247,7 +1333,7 @@ export default function CreatePage() {
           </div>
         )}
 
-        {step === 5 && clipPhase === "none" && (
+        {step === 5 && !isPortraitPack && clipPhase === "none" && (
           <div className="max-w-xl mx-auto text-center">
             <div
               className="icon-well icon-well-leaf mx-auto mb-6 pop-in"
