@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Users, Copy, Check, Link2, Tv, Heart } from "lucide-react";
 import SimpleNav from "@/components/SimpleNav";
 import SiteFooter from "@/components/SiteFooter";
+import AutoVideo from "@/components/AutoVideo";
 import Reveal from "@/components/Reveal";
 
 /**
@@ -119,11 +120,10 @@ export default function PacksPage() {
       <section className="max-w-4xl mx-auto px-6 pb-14">
         <Reveal>
           <div className="tile tile-hover tilt-b">
-            {/* eslint-disable-next-line @next/next/no-img-element -- static demo art */}
-            <img
-              src="/demo/crossover.jpg"
+            <AutoVideo
+              src="/videos/pack.mp4"
+              poster="/demo/crossover.jpg"
               alt="Cartoon of Dutch playing tug-of-war with a golden retriever in a sunlit meadow"
-              loading="lazy"
               style={{ aspectRatio: "21 / 9" }}
             />
           </div>

@@ -1,12 +1,18 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import AutoVideo from "./AutoVideo";
 
 /** src, alt, resting rotation, and the CSS class that mirrors it. */
 const TILES = [
   {
+    /* The signature shot, and the only moving tile: five seconds of Dutch
+       chasing a butterfly. The poster is the still that used to live in
+       this frame, so with reduced motion the hero is byte-identical to
+       what shipped before. */
+    video: "/videos/park.mp4",
     src: "/demo/poster-art.jpg",
-    alt: "Cartoon of Dutch, a tan French Bulldog, standing in a sunlit meadow as a butterfly drifts past",
+    alt: "Cartoon of Dutch, a tan French Bulldog, bounding through a sunlit meadow after a blue butterfly",
     rotate: -2.2,
     tilt: "tilt-a",
   },
@@ -67,7 +73,13 @@ function Tile({
   reduced: boolean | null;
 }) {
   const t = TILES[index];
-  const img = (
+  const video = "video" in t ? t.video : undefined;
+
+  // A tile with a clip still ships its poster in the server HTML, so the
+  // frame is filled on first paint whether or not the script ever runs.
+  const art = video ? (
+    <AutoVideo src={video} poster={t.src} alt={t.alt} eager />
+  ) : (
     // eslint-disable-next-line @next/next/no-img-element -- static demo art, sized entirely by CSS
     <img
       src={t.src}
@@ -78,7 +90,7 @@ function Tile({
   );
 
   if (reduced) {
-    return <div className={`tile ${t.tilt}`}>{img}</div>;
+    return <div className={`tile ${t.tilt}`}>{art}</div>;
   }
 
   return (
@@ -89,7 +101,7 @@ function Tile({
       whileHover={{ y: -6, scale: 1.02, rotate: t.rotate }}
       transition={{ duration: 0.7, delay: 0.09 * index, ease: [0.2, 0.7, 0.3, 1] }}
     >
-      {img}
+      {art}
     </motion.div>
   );
 }

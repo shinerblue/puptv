@@ -4,6 +4,8 @@ import type { LucideIcon } from "lucide-react";
 import SiteFooter from "@/components/SiteFooter";
 import AccountMenu from "@/components/AccountMenu";
 import HeroCollage from "@/components/HeroCollage";
+import AutoVideo from "@/components/AutoVideo";
+import WatchEpisodeCta from "@/components/WatchEpisodeCta";
 import Reveal from "@/components/Reveal";
 import { LEDGER_STATS } from "@/lib/impact";
 
@@ -96,6 +98,8 @@ interface ShowcaseItem {
   /** Either a real still from /public/demo… */
   img?: string;
   alt?: string;
+  /** …optionally with the clip that still was pulled from. */
+  video?: string;
   /** …or a painted plate with one decorative glyph. */
   Icon?: LucideIcon;
   plate?: string;
@@ -109,8 +113,11 @@ const SHOWCASE: ShowcaseItem[] = [
     title: "Five worlds to run around in",
     desc: "The park, the beach, a mountain trail, the city at night, outer space — with more themes on the way.",
     cta: "Pick an adventure",
-    img: "/demo/still-1.jpg",
-    alt: "Cartoon of Dutch bounding across a sunlit park",
+    /* The hero already carries the park, so this card shows a different
+       world — it makes "five worlds" legible instead of asserted. */
+    img: "/demo/beach.jpg",
+    video: "/videos/beach.mp4",
+    alt: "Cartoon of Dutch splashing through the surf on a sunny beach, palm trees behind him",
   },
   {
     href: "/packs",
@@ -120,6 +127,7 @@ const SHOWCASE: ShowcaseItem[] = [
     desc: "Different houses, different families, one episode. Invite a friend and their dog joins the cast.",
     cta: "See how packs work",
     img: "/demo/crossover.jpg",
+    video: "/videos/pack.mp4",
     alt: "Cartoon of Dutch playing tug-of-war with a golden retriever in a meadow",
   },
   {
@@ -129,6 +137,7 @@ const SHOWCASE: ShowcaseItem[] = [
     desc: "Tell us the occasion and we write it into the story — party hats, cake, confetti, all of it.",
     cta: "Add an occasion",
     img: "/demo/birthday.jpg",
+    video: "/videos/birthday.mp4",
     alt: "Cartoon of Dutch in a party hat beside a birthday cake",
   },
   {
@@ -275,6 +284,13 @@ export default function HomePage() {
 
           <HeroCollage />
         </div>
+      </section>
+
+      {/* ------------------------------------ WATCH A REAL EPISODE */}
+      {/* We sell videos, so one whole video has to be a click away from
+          the top of the page — not a still, not a promise. */}
+      <section className="max-w-3xl mx-auto px-6 pb-16">
+        <WatchEpisodeCta />
       </section>
 
       {/* ------------------------------------------ THE MAGIC MOMENT */}
@@ -468,7 +484,9 @@ export default function HomePage() {
                 <Reveal key={f.kicker} delay={i * 0.06} className="h-full">
                   <Link href={f.href} className="feature-card card-warm card-lift">
                     <div className="feature-art">
-                      {f.img ? (
+                      {f.video && f.img ? (
+                        <AutoVideo src={f.video} poster={f.img} alt={f.alt ?? ""} />
+                      ) : f.img ? (
                         /* eslint-disable-next-line @next/next/no-img-element -- static demo art */
                         <img src={f.img} alt={f.alt} loading="lazy" />
                       ) : (
