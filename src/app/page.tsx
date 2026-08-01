@@ -74,7 +74,7 @@ const STEPS = [
     badge: "badge-num badge-num-leaf",
     title: "Turn on the TV",
     desc:
-      "Connect YouTube once and you're done forever. Every new episode lands on your dog's channel by itself — open the TV and it's just there.",
+      "Connect YouTube once and you're done forever. Every new episode lands on your dog's own YouTube channel — so it plays on Apple TV, Roku, Fire TV, Google TV, or any smart TV. Open the TV and it's just there.",
   },
 ];
 
@@ -265,8 +265,9 @@ export default function HomePage() {
               className="text-xl mb-8 mx-auto leading-relaxed"
               style={{ color: "#6B625B", maxWidth: "520px" }}
             >
-              Send a few photos. We draw your actual dog into a cartoon adventure — and it
-              turns up on your TV all by itself. No apps, no files, nothing to figure out.
+              Send a few photos. We draw your actual dog into a cartoon adventure that lands on
+              your own private YouTube channel — so it plays on Apple TV, Roku, Fire TV, Google
+              TV, or any smart TV. Nothing to install, nothing to figure out.
             </p>
 
             <div className="hero-actions flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -447,6 +448,12 @@ export default function HomePage() {
             </Reveal>
           ))}
         </div>
+
+        <Reveal delay={0.16}>
+          <p className="text-center mt-10 text-sm" style={{ color: "#6B625B" }}>
+            Works on any TV with YouTube: Apple TV, Google TV, Roku, Fire TV, and every smart TV.
+          </p>
+        </Reveal>
       </section>
 
       {/* ----------------------------------------- FEATURE SHOWCASE */}
