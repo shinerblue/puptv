@@ -4,6 +4,39 @@ import Reveal from "@/components/Reveal";
 import { Heart, PawPrint } from "lucide-react";
 import { LEDGER_STATS, LEDGER_ROWS, IMPACT_RECEIPT } from "@/lib/impact";
 
+/**
+ * Honest, approximate breakdown of a $4.99 single episode. We're a small
+ * family project — this deliberately includes the slice that pays for our
+ * time and overhead, not just "video vs. charity." Figures are rounded;
+ * see docs/marketing-copy.md for the source numbers.
+ */
+const MONEY_BREAKDOWN = [
+  {
+    label: "Creates your video (AI generation)",
+    amount: "~$1.90",
+    pct: "38%",
+    color: "#D9A876",
+  },
+  {
+    label: "To the rescue you choose",
+    amount: "$1.00",
+    pct: "20%",
+    color: "#047857",
+  },
+  {
+    label: "Payment processing",
+    amount: "~$0.45",
+    pct: "9%",
+    color: "#C9B8A3",
+  },
+  {
+    label: "Keeps ToonTails running — servers, improvements, our small team",
+    amount: "~$1.65",
+    pct: "33%",
+    color: "#C2410C",
+  },
+];
+
 export default function ImpactPage() {
   return (
     <div className="min-h-screen warm-page">
@@ -20,7 +53,8 @@ export default function ImpactPage() {
           <span style={{ color: "#C2410C" }}>actually goes</span>
         </h1>
         <p className="text-xl mx-auto leading-relaxed" style={{ color: "#6B625B", maxWidth: "560px" }}>
-          Every ToonTails episode funds dog rescues. Not &ldquo;someday&rdquo; — right now, and in
+          $1 from every ToonTails episode goes to a dog rescue — flat and guaranteed, never
+          &ldquo;profits if there are any.&rdquo; Not &ldquo;someday&rdquo; — right now, and in
           public. The numbers below are illustrative; the real ledger goes live with our first
           customers.
         </p>
@@ -104,6 +138,44 @@ export default function ImpactPage() {
 
       <section className="max-w-3xl mx-auto px-6 pb-12">
         <Reveal>
+          <div className="card-warm p-8 md:p-10">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="icon-well icon-well-sm">
+                <PawPrint className="w-5 h-5" style={{ color: "#C2410C" }} />
+              </div>
+              <h2 className="font-bold" style={{ fontSize: "23px", color: "#1D1D1F" }}>
+                Where your $4.99 goes
+              </h2>
+            </div>
+            <p className="text-sm leading-relaxed mb-6" style={{ color: "#6B625B" }}>
+              Approximate, for one episode. We&apos;re a small family project — this includes the
+              part that pays for our time, not just &ldquo;profits if there are any.&rdquo; The $1
+              rescue pledge itself is flat and guaranteed no matter what.
+            </p>
+            <div className="space-y-4">
+              {MONEY_BREAKDOWN.map((row) => (
+                <div key={row.label}>
+                  <div className="flex items-center justify-between gap-4 mb-2 text-sm">
+                    <span style={{ color: "#1D1D1F", fontWeight: 600 }}>{row.label}</span>
+                    <span
+                      className="flex-shrink-0"
+                      style={{ color: row.color, fontWeight: 700, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}
+                    >
+                      {row.amount}
+                    </span>
+                  </div>
+                  <div className="rounded-full overflow-hidden h-3" style={{ background: "#F0E2D2" }}>
+                    <div className="h-3 rounded-full" style={{ width: row.pct, background: row.color }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Reveal>
+      </section>
+
+      <section className="max-w-3xl mx-auto px-6 pb-12">
+        <Reveal>
           <div className="card-sky p-8 md:p-10">
             <div className="flex items-center gap-3 mb-5">
               <div className="icon-well icon-well-sm icon-well-sky">
@@ -118,8 +190,8 @@ export default function ImpactPage() {
               operations filming random dogs they don&apos;t know, owned by no one in particular.
             </p>
             <p className="text-sm leading-relaxed" style={{ color: "#1D5A80" }}>
-              ToonTails is the opposite. The dog is yours. The money goes to rescues that are
-              saving dogs today. That&apos;s the whole thing.
+              ToonTails is the opposite. The dog is yours, and $1 from every episode goes to
+              rescues that are saving dogs today — flat and guaranteed. That&apos;s the promise.
             </p>
           </div>
         </Reveal>

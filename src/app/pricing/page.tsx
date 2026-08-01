@@ -152,7 +152,8 @@ export default function PricingPage() {
               </div>
             </div>
             <p className="text-sm mt-5 leading-relaxed" style={{ color: "#6B625B" }}>
-              The $1.00-per-episode rescue pledge is the same no matter which one you choose.
+              The rescue pledge is flat and guaranteed on every plan — $1.00 for a single episode,
+              $2.50 for the three-pack, $5.00 for the season — no matter which motion quality you pick.
             </p>
           </div>
         </Reveal>

@@ -64,7 +64,7 @@ Three different themes (jungle, ocean, mountain). You get three weeks of Bailey 
 ## Charity Section
 
 ### The Ledger
-Every ToonTails episode you buy funds dog rescues. Not "someday." Right now. Here's how it works:
+$1 from every ToonTails episode you buy goes to a dog rescue ($2.50 per three-pack, $5 per season) — flat, guaranteed, not "someday" and not "profits if there are any." Right now. Here's how it works:
 
 | What You Buy | Amount to Rescue |
 |---|---|
@@ -77,9 +77,9 @@ Every week, we post which rescues received funds. You see it. No mystery. No cor
 ### Against the Content Farm
 YouTube is full of "dog TV." Hours of it. But most of it comes from overseas operations that film random dogs they don't know, owned by no one in particular.
 
-ToonTails is different. Bailey is yours. The money goes to rescues that save dogs today. That's it.
+ToonTails is different. Bailey is yours, and $1 from every episode goes to rescues that save dogs today — flat and guaranteed. That's the promise.
 
-We're not positioning ourselves as the morality police. We're just offering you something real: your dog's story, and money that actually helps.
+We're not positioning ourselves as the morality police. We're a small family project, and we're upfront that the rest of what you pay covers making the video, payment processing, and running ToonTails — our time included, not just "profits if there are any." What we won't do is hide it.
 
 
 ## Five Taglines
@@ -97,7 +97,7 @@ ToonTails creates custom cartoon adventures starring your dog. Upload photos, we
 
 Each episode is about a minute of continuous cartoon, built to loop seamlessly for as long as your dog wants to watch. New stories every week for six weeks if you pick the season pass. Dogs navigate jungles, solve mysteries, make friends—adventures written around your dog's personality and the photos you send.
 
-$1 from every episode goes to dog rescues ($2.50 per three-pack, $5 per season). Real rescues. Real impact. We publish which rescues received money every week, so you know exactly where it went.
+$1 from every episode goes to dog rescues ($2.50 per three-pack, $5 per season) — flat and guaranteed, regardless of tier. Real rescues. Real impact. We publish which rescues received money every week, so you know exactly where it went. The rest of what you pay covers making your episode, payment processing, and running ToonTails — including the small family team behind it. We're proud of that, not apologetic about it.
 
 ToonTails started because dog owners deserve better than anonymous overseas content farms. Your dog deserves a story. Rescues deserve real funding. Grandparents deserve something real to watch with their granddog.
 

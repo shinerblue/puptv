@@ -76,7 +76,7 @@ export default function SiteFooter() {
           className="pt-8 border-t text-center text-sm"
           style={{ borderColor: "#F0E2D2", color: "#6B625B" }}
         >
-          ToonTails · Dogs first, cats coming soon · Proceeds fund dog rescues
+          ToonTails · Dogs first, cats coming soon · $1 per episode to dog rescues
         </div>
       </div>
     </footer>

@@ -27,7 +27,7 @@ const VALUE_PROPS = [
     well: "icon-well icon-well-leaf",
     title: "Every episode feeds a rescue",
     desc:
-      "Most of what you pay covers making the cartoon. What's left goes to dog rescues — and we publish the running numbers, down to the dollar.",
+      "$1 from every episode goes straight to a dog rescue — flat and guaranteed, not “profits if there are any.” The rest covers making your video, payment processing, and running ToonTails, small family team included — and we publish the running numbers, down to the dollar.",
   },
 ];
 

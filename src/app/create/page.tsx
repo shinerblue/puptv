@@ -981,7 +981,7 @@ export default function CreatePage() {
                   <span style={{ color: "#6B625B" }}>Total</span>
                   <div className="text-right">
                     <span className="font-bold" style={{ color: "#1D1D1F" }}>{selectedTier.price}</span>
-                    <p className="text-xs font-medium" style={{ color: "#C2410C" }}>most of this funds dog rescues</p>
+                    <p className="text-xs font-medium" style={{ color: "#C2410C" }}>{selectedTier.pledge} goes straight to a dog rescue</p>
                   </div>
                 </div>
               </div>
@@ -1003,7 +1003,7 @@ export default function CreatePage() {
             <div className="card-warm p-6 mb-6">
               <h3 className="font-semibold mb-1" style={{ fontSize: "18px", color: "#1D1D1F" }}>Where should your donation go?</h3>
               <p className="text-sm mb-5" style={{ color: "#6B625B" }}>
-                Part of every order funds a dog rescue. Pick one, or let us choose.
+                {selectedTier.pledge} from every order goes to a dog rescue. Pick one, or let us choose.
               </p>
               <CharityPicker selected={charity} onSelect={setCharity} />
             </div>
@@ -1226,7 +1226,7 @@ export default function CreatePage() {
                 </div>
 
                 <p className="text-sm font-medium mt-8 mb-1 text-center" style={{ color: "#C2410C" }}>
-                  🐾 Thank you — part of every real order goes to a dog rescue.
+                  🐾 Thank you — {selectedTier.pledge} from your order goes to a dog rescue.
                 </p>
                 <p className="text-sm text-center mb-8">
                   <Link href="/impact" style={{ color: "#6B625B" }}>
@@ -1341,7 +1341,7 @@ export default function CreatePage() {
             </div>
 
             <p className="text-sm font-medium mb-1" style={{ color: "#C2410C" }}>
-              🐾 Thank you — part of what you paid is going to{" "}
+              🐾 Thank you — {selectedTier.pledge} of what you paid is going to{" "}
               {charity === "choose-for-me" ? "a dog rescue we choose for you" : selectedCharityObj.name}.
             </p>
             <p className="text-sm mb-6">
