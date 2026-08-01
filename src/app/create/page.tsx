@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowLeft, Loader2, Tv, Check, Copy, Send, Moon, PawPrint, Sparkles, Heart } from "lucide-react";
+import { ArrowLeft, Loader2, Tv, Check, Copy, Send, Moon, PawPrint, Sparkles, Heart, Users } from "lucide-react";
 import PhotoUploader, { CompressedPhoto } from "@/components/PhotoUploader";
 import EpisodePlayer from "@/components/EpisodePlayer";
 import {
@@ -796,6 +796,25 @@ export default function CreatePage() {
                 </button>
               </div>
             )}
+
+            {/* Sits outside the hasSecondPet block on purpose: the whole
+                point is that people never find this, and hiding it behind
+                a toggle they have not switched on would keep it hidden. */}
+            <Link href="/packs" className="pointer-card mb-8">
+              <span className="icon-well icon-well-sm" aria-hidden="true">
+                <Users className="w-5 h-5" style={{ color: "#C2410C" }} />
+              </span>
+              <span>
+                <span className="block font-semibold" style={{ fontSize: "16px", color: "#1D1D1F" }}>
+                  Want dogs from another family in this? That&apos;s a Pack →
+                </span>
+                <span className="block text-sm mt-1" style={{ color: "#6B625B" }}>
+                  The pets you add here all live in your house. A Pack invites a friend&apos;s
+                  dog into the same episode — and each family gets their own copy, on their
+                  own TV.
+                </span>
+              </span>
+            </Link>
 
             <div className="mb-10">
               <CalmModeToggle enabled={calmMode} onToggle={setCalmMode} />

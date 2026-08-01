@@ -14,6 +14,7 @@ const FOOTER_COLUMNS = [
   {
     heading: "Family",
     links: [
+      { href: "/packs", label: "Packs with friends" },
       { href: "/gift", label: "Send a gift" },
       { href: "/memorial", label: "Memorial episodes" },
     ],

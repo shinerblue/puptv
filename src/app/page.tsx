@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { PawPrint, Tv, Heart, Sparkles, ArrowRight } from "lucide-react";
+import { PawPrint, Tv, Heart, Sparkles, ArrowRight, Moon, Gift, Repeat } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import SiteFooter from "@/components/SiteFooter";
 import AccountMenu from "@/components/AccountMenu";
 import HeroCollage from "@/components/HeroCollage";
@@ -75,6 +76,112 @@ const STEPS = [
   },
 ];
 
+/**
+ * The showcase grid. Owner feedback was blunt: the features exist but
+ * nobody can see them. So every one of them gets a picture, a plain-
+ * language line and its own destination — and the whole card is the
+ * link, not a small "learn more" at the bottom.
+ *
+ * Memorial episodes are deliberately absent. They belong in the quiet
+ * footer link, not in a joyful grid.
+ */
+interface ShowcaseItem {
+  href: string;
+  kicker: string;
+  title: string;
+  desc: string;
+  cta: string;
+  /** Small ribbon beside the kicker, e.g. "New". */
+  badge?: string;
+  /** Either a real still from /public/demo… */
+  img?: string;
+  alt?: string;
+  /** …or a painted plate with one decorative glyph. */
+  Icon?: LucideIcon;
+  plate?: string;
+  iconColor?: string;
+}
+
+const SHOWCASE: ShowcaseItem[] = [
+  {
+    href: "/create",
+    kicker: "Adventures",
+    title: "Five worlds to run around in",
+    desc: "The park, the beach, a mountain trail, the city at night, outer space — with more themes on the way.",
+    cta: "Pick an adventure",
+    img: "/demo/still-1.jpg",
+    alt: "Cartoon of Dutch bounding across a sunlit park",
+  },
+  {
+    href: "/packs",
+    kicker: "Packs",
+    badge: "New",
+    title: "Your dog + their best friends, together in one cartoon",
+    desc: "Different houses, different families, one episode. Invite a friend and their dog joins the cast.",
+    cta: "See how packs work",
+    img: "/demo/crossover.jpg",
+    alt: "Cartoon of Dutch playing tug-of-war with a golden retriever in a meadow",
+  },
+  {
+    href: "/create",
+    kicker: "Occasions",
+    title: "Birthdays, holidays, gotcha days",
+    desc: "Tell us the occasion and we write it into the story — party hats, cake, confetti, all of it.",
+    cta: "Add an occasion",
+    img: "/demo/birthday.jpg",
+    alt: "Cartoon of Dutch in a party hat beside a birthday cake",
+  },
+  {
+    href: "/create",
+    kicker: "Calm Mode",
+    title: "Made for an anxious dog",
+    desc: "Dog-vision colors, slow pacing and no sudden noises — for the ones who don't love a busy screen.",
+    cta: "Turn on calm mode",
+    Icon: Moon,
+    plate: "plate-calm",
+    iconColor: "#1D5A80",
+  },
+  {
+    href: "/gift",
+    kicker: "Gifts",
+    title: "Send it straight to Grandma's TV",
+    desc: "You upload and pay from your phone. They get one link, no account, no setup, nothing to install.",
+    cta: "Send a gift",
+    Icon: Gift,
+    plate: "plate-gift",
+    iconColor: "#C2410C",
+  },
+  {
+    href: "/favorites",
+    kicker: "The Continuous Loop",
+    title: "Every favorite, one long video",
+    desc: "Star the episodes you love and we stitch them into a single loop that just keeps playing.",
+    cta: "Build a loop",
+    Icon: Repeat,
+    plate: "plate-loop",
+    iconColor: "#047857",
+  },
+  {
+    href: "/create",
+    kicker: "Posters",
+    title: "Their cartoon self, on your wall",
+    desc: "The same drawing that stars in the episode, printed big enough to hang in the hallway.",
+    cta: "See the poster",
+    img: "/demo/poster-art.jpg",
+    alt: "Framed poster of Dutch's cartoon portrait",
+  },
+  {
+    href: "/impact",
+    kicker: "Every episode gives back",
+    title: "$1 from every episode, to a dog rescue",
+    desc: "Pledged on every single order and published in a running public ledger — down to the dollar.",
+    cta: "Read the ledger",
+    Icon: Heart,
+    plate: "plate-give",
+    iconColor: "#9A3412",
+  },
+];
+
 export default function HomePage() {
   return (
     <div className="min-h-screen warm-page">
@@ -98,6 +205,9 @@ export default function HomePage() {
             <a href="#how-it-works" className="nav-link">
               How it works
             </a>
+            <Link href="/packs" className="nav-link">
+              Packs
+            </Link>
             <Link href="/pricing" className="nav-link">
               Pricing
             </Link>
@@ -323,8 +433,79 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ----------------------------------------- FEATURE SHOWCASE */}
+      <section id="everything" className="warm-band py-20">
+        <div className="max-w-6xl mx-auto px-6">
+          <Reveal>
+            <div className="text-center mb-12">
+              <span className="chip chip-quiet chip-sm uppercase mb-5">
+                Everything included
+              </span>
+              <h2
+                className="font-bold mb-4 mt-2"
+                style={{
+                  fontSize: "clamp(28px, 4vw, 40px)",
+                  letterSpacing: "-0.02em",
+                  color: "#1D1D1F",
+                }}
+              >
+                Everything your dog can star in
+              </h2>
+              <p
+                className="mx-auto leading-relaxed"
+                style={{ color: "#6B625B", maxWidth: "560px", fontSize: "18px" }}
+              >
+                One dog, a lot of different shows. Every one of these is part of ToonTails —
+                tap any card to see it.
+              </p>
+            </div>
+          </Reveal>
+
+          <div className="feature-grid">
+            {SHOWCASE.map((f, i) => {
+              const Icon = f.Icon;
+              return (
+                <Reveal key={f.kicker} delay={i * 0.06} className="h-full">
+                  <Link href={f.href} className="feature-card card-warm card-lift">
+                    <div className="feature-art">
+                      {f.img ? (
+                        /* eslint-disable-next-line @next/next/no-img-element -- static demo art */
+                        <img src={f.img} alt={f.alt} loading="lazy" />
+                      ) : (
+                        <span className={`feature-plate ${f.plate}`} aria-hidden="true">
+                          {Icon ? <Icon className="w-8 h-8" style={{ color: f.iconColor }} /> : null}
+                        </span>
+                      )}
+                    </div>
+                    <div className="feature-body">
+                      <div className="feature-kicker">
+                        {f.kicker}
+                        {f.badge ? <span className="chip chip-blush chip-sm">{f.badge}</span> : null}
+                      </div>
+                      <h3 className="feature-title">{f.title}</h3>
+                      <p className="feature-desc">{f.desc}</p>
+                      <span className="feature-cta">{f.cta} →</span>
+                    </div>
+                  </Link>
+                </Reveal>
+              );
+            })}
+          </div>
+
+          <Reveal>
+            <p className="text-center mt-12" style={{ color: "#6B625B", fontSize: "15px" }}>
+              Lost a dog? We make{" "}
+              <Link href="/memorial" style={{ color: "#C2410C", fontWeight: 600 }}>
+                memorial episodes
+              </Link>{" "}
+              too — quietly, and with care.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
       {/* -------------------------------------------------- LEDGER */}
-      <section id="ledger" className="pb-20 max-w-5xl mx-auto px-6">
+      <section id="ledger" className="pt-20 pb-20 max-w-5xl mx-auto px-6">
         <Reveal>
           <div className="card-warm p-10 md:p-16">
             <div className="text-center mb-12">
