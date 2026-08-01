@@ -1117,7 +1117,9 @@ export default function CreatePage() {
               <div className="card-warm p-6 mb-8">
                 <h3 className="font-semibold mb-1" style={{ fontSize: "18px", color: "#1D1D1F" }}>Who can watch?</h3>
                 <p className="text-sm mb-5" style={{ color: "#6B625B" }}>
-                  You can change this later. It only affects this episode.
+                  This channel is {displayName}&apos;s own — private by default, so it&apos;s just
+                  for the people you choose. You can change this later, and it only affects this
+                  episode.
                 </p>
                 <PrivacyPicker selected={privacy} onSelect={setPrivacy} />
               </div>
@@ -1458,6 +1460,10 @@ export default function CreatePage() {
 
             <div className="card-warm p-6 mt-8 mb-6 text-left">
               <h3 className="font-semibold mb-3" style={{ fontSize: "18px", color: "#1D1D1F" }}>How to watch on your TV</h3>
+              <p className="text-sm mb-3" style={{ color: "#6B625B", lineHeight: 1.6 }}>
+                Any TV with the YouTube app works — Apple TV, Roku, Fire TV, Google TV, or a
+                smart TV.
+              </p>
               <ol className="space-y-2 text-sm" style={{ color: "#6B625B", lineHeight: 1.7 }}>
                 <li>1. Open the YouTube app on your TV — most smart TVs already have it.</li>
                 <li>2. Sign in with the same Google account you just connected.</li>
