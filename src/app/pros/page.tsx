@@ -90,9 +90,11 @@ export default function ProsPage() {
           <div className="card-warm p-10">
             <p className="mb-7 leading-relaxed" style={{ fontSize: "17px", color: "#6B625B" }}>
               Continuous, gentle-pacing video — dog-vision colors, no jump cuts, no ads to
-              manage. We&apos;re still early. If you run a kennel, vet clinic, or daycare and
-              want to pilot calm loops on your lobby TVs, get in touch and we&apos;ll set it up
-              by hand.
+              manage. It runs the same way our home episodes do: on a private YouTube channel
+              that plays on any lobby TV with YouTube — Apple TV, Roku, Fire TV, Google TV, or a
+              smart TV — nothing extra to install. We&apos;re still early. If you run a kennel,
+              vet clinic, or daycare and want to pilot calm loops on your lobby TVs, get in touch
+              and we&apos;ll set it up by hand.
             </p>
             <a
               href="mailto:hello@toontails.tv?subject=ToonTails%20for%20Business"

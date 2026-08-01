@@ -116,7 +116,9 @@ export default function FavoritesPage() {
         {status === "done" ? (
           <div className="card-warm p-6 pop-in" style={{ background: "#ECFDF5", borderColor: "#A7F3D0" }}>
             <p className="font-semibold" style={{ color: "#047857", fontSize: "18px" }}>
-              🐾 Your two-hour loop is rendering — it&apos;ll be on the channel tonight.
+              🐾 Your two-hour loop is rendering — it&apos;ll appear on your dog&apos;s own
+              YouTube channel tonight, ready for Apple TV, Roku, Fire TV, Google TV, or any
+              smart TV.
             </p>
           </div>
         ) : (
